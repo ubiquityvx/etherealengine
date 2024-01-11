@@ -30,7 +30,7 @@ import {
   ImageTransformParameters,
   ModelTransformParameters
 } from '@etherealengine/engine/src/assets/classes/ModelTransform'
-import { State } from '@etherealengine/hyperflux'
+import { Path, State } from '@etherealengine/hyperflux'
 
 import BooleanInput from '../inputs/BooleanInput'
 import InputGroup from '../inputs/InputGroup'
@@ -47,25 +47,26 @@ export default function GLTFTransformProperties({
   onChange
 }: {
   transformParms: State<ModelTransformParameters>
-  onChange: (transformParms: ModelTransformParameters) => void
+  onChange: (path: Path) => void
 }) {
   const onChangeTransformParm = useCallback((scope: State<any>) => {
     return (value: typeof scope.value) => {
       scope.set(value)
-      onChange(JSON.parse(JSON.stringify(transformParms.value)))
+      onChange(scope.path)
     }
   }, [])
 
   const onChangeTransformStringParm = useCallback((scope: State<any>) => {
     return (value: SyntheticEvent) => {
       scope.set((value.target as HTMLInputElement).value)
+      onChange(scope.path)
     }
   }, [])
 
   const onChangeParameter = useCallback(
     (scope: State<any>, key: string) => (val: any) => {
       scope[key].set(val)
-      onChange(JSON.parse(JSON.stringify(transformParms.value)))
+      onChange(scope.path)
     },
     []
   )

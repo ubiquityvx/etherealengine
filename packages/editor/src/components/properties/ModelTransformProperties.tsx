@@ -44,9 +44,12 @@ import MeshBasicMaterial from '@etherealengine/engine/src/renderer/materials/con
 import bakeToVertices from '@etherealengine/engine/src/renderer/materials/functions/bakeToVertices'
 import { materialsFromSource } from '@etherealengine/engine/src/renderer/materials/functions/MaterialLibraryFunctions'
 import { ModelComponent } from '@etherealengine/engine/src/scene/components/ModelComponent'
-import { getModelResources } from '@etherealengine/engine/src/scene/functions/loaders/ModelFunctions'
+import {
+  getModelResources,
+  ResourceOverridePresets
+} from '@etherealengine/engine/src/scene/functions/loaders/ModelFunctions'
 import { useHookstate } from '@etherealengine/hyperflux'
-import { getMutableState, NO_PROXY, State } from '@etherealengine/hyperflux/functions/StateFunctions'
+import { getMutableState, NO_PROXY, Path, State } from '@etherealengine/hyperflux/functions/StateFunctions'
 
 import { modelTransformPath } from '@etherealengine/common/src/schema.type.module'
 import { transformModel as clientSideTransformModel } from '@etherealengine/engine/src/assets/compression/ModelTransformFunctions'
@@ -68,11 +71,16 @@ export default function ModelTransformProperties({ entity, onChangeModel }: { en
   const transformHistory = useHookstate<string[]>([])
   const isClientside = useHookstate<boolean>(true)
   const isBatchCompress = useHookstate<boolean>(false)
+  const modelParametersCounter = useHookstate(0)
   const transformParms = useHookstate<ModelTransformParameters>({
     ...DefaultModelTransformParameters,
     src: modelState.src.value,
     modelFormat: modelState.src.value.endsWith('.gltf') ? 'gltf' : modelState.src.value.endsWith('.vrm') ? 'vrm' : 'glb'
   })
+  const overridePresets = useHookstate<ResourceOverridePresets>({
+    uastcNormals: true,
+    doubleSizeDiffuse: true
+  } as ResourceOverridePresets)
 
   const vertexBakeOptions = useHookstate({
     map: true,
@@ -210,8 +218,8 @@ export default function ModelTransformProperties({ entity, onChangeModel }: { en
   }, [modelState.src])
 
   useEffect(() => {
-    transformParms.resources.set(getModelResources(entity, transformParms.value))
-  }, [modelState.scene, transformParms])
+    transformParms.resources.set(getModelResources(entity, transformParms.value, overridePresets.value))
+  }, [modelState.scene, modelParametersCounter])
 
   return (
     <CollapsibleBlock label="Model Transform Properties">
@@ -219,7 +227,9 @@ export default function ModelTransformProperties({ entity, onChangeModel }: { en
         <CollapsibleBlock label="glTF-Transform">
           <GLTFTransformProperties
             transformParms={transformParms}
-            onChange={(transformParms: ModelTransformParameters) => {}}
+            onChange={(path: Path) => {
+              if (!path.includes('resources')) modelParametersCounter.set(modelParametersCounter.value + 1)
+            }}
           />
         </CollapsibleBlock>
         {!transforming.value && (

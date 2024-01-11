@@ -51,7 +51,16 @@ export function getModelSceneID(entity: Entity): SceneID {
   return (getComponent(entity, UUIDComponent) + '-' + getComponent(entity, ModelComponent).src) as SceneID
 }
 
-export function getModelResources(entity: Entity, defaultParms: ModelTransformParameters): ResourceTransforms {
+export type ResourceOverridePresets = {
+  uastcNormals: boolean
+  doubleSizeDiffuse: boolean
+}
+
+export function getModelResources(
+  entity: Entity,
+  defaultParms: ModelTransformParameters,
+  overridePresets?: ResourceOverridePresets
+): ResourceTransforms {
   const model = getComponent(entity, ModelComponent)
   if (!model?.scene) return { geometries: [], images: [] }
   const geometries: GeometryTransformParameters[] = iterateEntityNode(entity, (entity) => {
@@ -149,11 +158,11 @@ export function getModelResources(entity: Entity, defaultParms: ModelTransformPa
           }
         }
       } as ImageTransformParameters
-      if (descriptor === 'normalMap') {
+      if (overridePresets?.uastcNormals && descriptor === 'normalMap') {
         imageParms.parameters.textureCompressionType.enabled = true
         imageParms.parameters.textureCompressionType.parameters = 'uastc'
       }
-      if (descriptor === 'baseColorMap') {
+      if (overridePresets?.doubleSizeDiffuse && descriptor === 'baseColorMap') {
         imageParms.parameters.maxTextureSize.enabled = true
         imageParms.parameters.maxTextureSize.parameters = defaultParms.maxTextureSize * 2
       }
