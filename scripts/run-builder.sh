@@ -11,7 +11,7 @@ START_TIME=`date +"%d-%m-%yT%H-%M-%S"`
 mkdir -pv ~/.docker
 cp -v /var/lib/docker/certs/client/* ~/.docker
 touch ./builder-started.txt
-bash ./scripts/setup_helm.sh
+#bash ./scripts/setup_helm.sh
 if [[ "$CLOUD_PROVIDER" == "do" ]]; then
   bash ./scripts/setup_do.sh $DO_API_TOKEN $CLUSTER_NAME
 else
@@ -62,7 +62,7 @@ npm run record-build-error -- --service=root --isDocker=true
 
 npm install -g cli @aws-sdk/client-s3
 
-if [ "$SERVE_CLIENT_FROM_STORAGE_PROVIDER" = "true" ] && [ "$STORAGE_PROVIDER" = "s3-do" ] ;
+if [ "$SERVE_CLIENT_FROM_STORAGE_PROVIDER" = "true" ] && [ "$STORAGE_PROVIDER" = "s3-do" ] || [ "$STORAGE_PROVIDER" = "s3" ] ;
 then
   npx cross-env ts-node --swc scripts/get-deletable-client-files.ts
 

@@ -3,7 +3,7 @@ set -e
 set -x
 
 STAGE="dig"
-TAG="dig-do-5.4.6"
+TAG="dig-do-5.232.121"
 LABEL="etherealengine/etherealengine"
 DOCR_REGISTRY="registry.digitalocean.com/etherealengine"
 REPO_NAME="etherealengine"
@@ -13,10 +13,14 @@ echo "Entering the script"
 
 doctl registry login
 
+docker buildx build \
+    --load \
+    -t ee-base1:latest \
+    -f dockerfiles/base/Dockerfile-base .
+
 if [ $PUBLISH_DOCKERHUB == 'true' ]
 then
   echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-
   docker buildx build \
     --load \
     -t $DOCR_REGISTRY/$REPO_NAME-builder:latest_$STAGE \
