@@ -1,4 +1,8 @@
-FROM microk8s.registry:32000/ee-base1:latest as builder
+ARG STAGE="dig"
+ARG ECR_URL="registry.digitalocean.com/etherealengine"
+ARG REPO_NAME="etherealengine"
+
+FROM ${ECR_URL}/${REPO_NAME}-dig-root:latest_${STAGE} as builder
 
 COPY . .
 

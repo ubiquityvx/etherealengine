@@ -3,7 +3,7 @@ set -e
 set -x
 
 STAGE="dig"
-TAG="dig-do-5.232.121"
+TAG="dig-do-5.211.121"
 LABEL="etherealengine/etherealengine"
 DOCR_REGISTRY="registry.digitalocean.com/etherealengine"
 REPO_NAME="etherealengine"
@@ -15,8 +15,11 @@ doctl registry login
 
 docker buildx build \
     --load \
-    -t ee-base1:latest \
-    -f dockerfiles/base/Dockerfile-base .
+    -t $DOCR_REGISTRY/$REPO_NAME-dig-root:${TAG} \
+    -t $DOCR_REGISTRY/$REPO_NAME-dig-root:latest_$STAGE \
+    -f dockerfiles/root/Dockerfile-root .
+docker push --all-tags $DOCR_REGISTRY/$REPO_NAME-dig-root
+
 
 if [ $PUBLISH_DOCKERHUB == 'true' ]
 then
