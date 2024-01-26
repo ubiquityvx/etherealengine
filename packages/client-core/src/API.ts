@@ -23,23 +23,16 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import type { AuthenticationClient } from '@feathersjs/authentication-client'
 import authentication from '@feathersjs/authentication-client'
 import feathers from '@feathersjs/client'
-import type { FeathersApplication } from '@feathersjs/feathers'
 import Primus from 'primus-client'
 
-import type { ServiceTypes } from '@etherealengine/common/declarations'
 import config from '@etherealengine/common/src/config'
 import { Engine } from '@etherealengine/ecs/src/Engine'
 
 import primusClient from './util/primus-client'
 
-export type FeathersClient = FeathersApplication<ServiceTypes> &
-  AuthenticationClient & {
-    primus: Primus
-    authentication: AuthenticationClient
-  }
+import type { FeathersClient } from "@etherealengine/engine/src/ecs/classes/Engine";
 
 /**@deprecated - use 'Engine.instance.api' instead */
 export class API {
@@ -61,12 +54,12 @@ export class API {
       })
     )
 
-    primus.on('reconnected', () => API.instance.client.reAuthenticate(true))
+    primus.on('reconnected', () => feathersClient.reAuthenticate(true))
 
     API.instance = new API()
-    API.instance.client = feathersClient as any
+    API.instance.client = feathersClient as FeathersClient
 
-    Engine.instance.api = feathersClient
+    Engine.instance.api = feathersClient as FeathersClient
   }
 }
 

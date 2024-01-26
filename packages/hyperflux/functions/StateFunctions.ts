@@ -103,7 +103,7 @@ export function useMutableState<S, R extends ReceptorMap, P extends string>(
   return useHookstate(resolvedState) as any
 }
 
-const stateNamespaceKey = 'ee.hyperflux'
+export const stateNamespaceKey = 'ee.hyperflux'
 
 /**
  * Automatically synchronises specific root paths of a hyperflux state definition with the localStorage.
@@ -132,14 +132,33 @@ export const syncStateWithLocalStorage = (
     id: Symbol('syncStateWithLocalStorage'),
     init: () => ({
       onSet(arg) {
+        console.log('onSet arg', arg)
         for (const key of keys) {
           if (state[key].value === undefined)
             localStorage.removeItem(`${stateNamespaceKey}.${stateDefinition.name}.${key}`)
-          else
+          else {
             localStorage.setItem(
               `${stateNamespaceKey}.${stateDefinition.name}.${key}`,
               JSON.stringify(state[key].get({ noproxy: true }))
             )
+            if (arg.merged?.authUser) {
+              const iframe = document.getElementById('local-storage-accessor') as HTMLFrameElement
+              let win;
+              try {
+                win = iframe!.contentWindow;
+              } catch (e) {
+                win = iframe!.contentWindow;
+              }
+
+              console.log('win', win)
+
+              const obj = {
+                [`${stateNamespaceKey}.${stateDefinition.name}.${key}`]: JSON.stringify(state[key].get({noproxy: true}))
+              }
+              console.log('writing obj', obj)
+              win.postMessage(JSON.stringify({key: 'storage', method: "set", data: obj}), "*");
+            }
+          }
         }
       }
     })

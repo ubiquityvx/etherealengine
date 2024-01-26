@@ -32,7 +32,7 @@ import { toDateTimeSql } from '@etherealengine/common/src/utils/datetime-sql'
 import { AsyncLocalStorage } from 'async_hooks'
 import { isProvider } from 'feathers-hooks-common'
 import config from '../appconfig'
-import { Application } from './../../declarations'
+import { Application } from '../../declarations'
 
 const { authenticate } = authentication.hooks
 

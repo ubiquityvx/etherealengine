@@ -260,7 +260,7 @@ export default defineConfig(async () => {
     define: define,
     server: {
       proxy: {},
-      cors: isDevOrLocal ? false : true,
+      cors: !isDevOrLocal,
       hmr:
         process.env.VITE_HMR === 'true'
           ? {
@@ -316,7 +316,9 @@ export default defineConfig(async () => {
               ? 'dev-sw.js?dev-sw'
               : 'service-worker.js'
             : '',
-        paymentPointer: coilSetting?.paymentPointer || ''
+        paymentPointer: coilSetting?.paymentPointer || '',
+        hostLocalStorageAccessor: '/local-storage-accessor.html',
+        rootHostname: 'localhost'
       }),
       viteCompression({
         filter: /\.(js|mjs|json|css)$/i,
@@ -334,7 +336,7 @@ export default defineConfig(async () => {
     },
     build: {
       target: 'esnext',
-      sourcemap: process.env.VITE_SOURCEMAPS === 'true' ? true : false,
+      sourcemap: process.env.VITE_SOURCEMAPS === 'true',
       minify: 'terser',
       dynamicImportVarsOptions: {
         warnOnError: true

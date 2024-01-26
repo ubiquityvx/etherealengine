@@ -25,10 +25,8 @@ Ethereal Engine. All Rights Reserved.
 
 import { Engine } from '@etherealengine/ecs/src/Engine'
 
-import { FeathersClient } from '../API'
-
 async function waitForClientAuthenticated(): Promise<void> {
-  const api = Engine.instance.api as FeathersClient
+  const api = Engine.instance.api
   console.log('Client authenticated?', api.authentication?.authenticated)
   if (api.authentication?.authenticated === true) return
   else

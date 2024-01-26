@@ -29,9 +29,16 @@ import { createHyperStore, getState } from '@etherealengine/hyperflux'
 import { HyperFlux, HyperStore, disposeStore } from '@etherealengine/hyperflux/functions/StoreFunctions'
 import * as bitECS from 'bitecs'
 
-import type { FeathersApplication } from '@feathersjs/feathers'
+import type { AuthenticationClient } from '@feathersjs/authentication-client'
+import Primus from 'primus-client'
 
 import type { ServiceTypes } from '@etherealengine/common/declarations'
+
+export type FeathersClient = Application<ServiceTypes> &
+    {
+      primus: Primus
+      authentication: AuthenticationClient
+    }
 
 import { getAllEntities } from 'bitecs'
 import { Group, Scene } from 'three'
@@ -41,6 +48,7 @@ import { removeEntity } from './EntityFunctions'
 import { removeQuery } from './QueryFunctions'
 import { SystemState } from './SystemState'
 import { Timer } from './Timer'
+import {Application} from "@feathersjs/feathers";
 
 export class Engine {
   static instance: Engine
@@ -49,7 +57,7 @@ export class Engine {
     const UndefinedEntity = bitECS.addEntity(HyperFlux.store)
   }
 
-  api: FeathersApplication<ServiceTypes>
+  api: FeathersClient
 
   /** The uuid of the logged-in user */
   userID: UserID

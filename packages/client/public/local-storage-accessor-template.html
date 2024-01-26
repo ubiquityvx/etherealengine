@@ -1,0 +1,30 @@
+
+<html lang="en">
+<head>
+    <title>Local Storage Accessor</title>
+    <script>
+        const allowedDomains = "<ALLOWED_DOMAINS>"
+        document.domain = "<ROOT_HOSTNAME>";
+        console.log('Loaded localstorage accessor')
+        window.onmessage = function(e) {
+            console.log('GOT MESSAGE', e)
+            if (allowedDomains.indexOf(e.origin) < 0) return;
+            console.log('Message was from allowed domain')
+            var payload = JSON.parse(e.data);
+            switch(payload.method) {
+                case 'set':
+                    localStorage.setItem(payload.key, JSON.stringify(payload.data));
+                    break;
+                case 'get':
+                    var parent = window.parent;
+                    var data = localStorage.getItem(payload.key);
+                    parent.postMessage(data, "*");
+                    break;
+                case 'remove':
+                    localStorage.removeItem(payload.key);
+                    break;
+            }
+        };
+    </script>
+</head>
+</html>

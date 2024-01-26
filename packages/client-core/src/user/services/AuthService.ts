@@ -32,7 +32,7 @@ import config, { validateEmail, validatePhoneNumber } from '@etherealengine/comm
 import { AuthUserSeed, resolveAuthUser } from '@etherealengine/common/src/interfaces/AuthUser'
 import multiLogger from '@etherealengine/common/src/logger'
 import { AuthStrategiesType } from '@etherealengine/common/src/schema.type.module'
-import { defineState, getMutableState, getState, syncStateWithLocalStorage } from '@etherealengine/hyperflux'
+import { defineState, getMutableState, getState, stateNamespaceKey, syncStateWithLocalStorage } from '@etherealengine/hyperflux'
 
 import {
   AvatarID,
@@ -62,7 +62,6 @@ import {
 import { Engine } from '@etherealengine/ecs/src/Engine'
 import { WorldState } from '@etherealengine/spatial/src/networking/interfaces/WorldState'
 import { AuthenticationResult } from '@feathersjs/authentication'
-import { API } from '../../API'
 import { NotificationService } from '../../common/services/NotificationService'
 import { LocationState } from '../../social/services/LocationService'
 
@@ -121,6 +120,28 @@ const resolveWalletUser = (credentials: any): UserType => {
   }
 }
 
+const getRootToken = async(): Promise<string> => {
+  const iframe = document.getElementById('local-storage-accessor') as HTMLFrameElement
+  let win;
+  try {
+    win = iframe!.contentWindow;
+  } catch (e) {
+    win = iframe!.contentWindow;
+  }
+
+  console.log('retrieving token from root storage')
+  win.postMessage(JSON.stringify({key: `${stateNamespaceKey}.AuthState.authUser`, method: "get"}), "*");
+  return await new Promise(resolve => {
+    window.onmessage = function(e) {
+      console.log('got message from iframe')
+      if (e.origin !== config.client.clientUrl) return
+      const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data
+      console.log('data from origin', data)
+      resolve(data?.accessToken)
+    };
+  })
+}
+
 export const AuthState = defineState({
   name: 'AuthState',
   initial: () => ({
@@ -158,7 +179,7 @@ export interface LinkedInLoginForm {
  */
 async function _resetToGuestToken(options = { reset: true }) {
   if (options.reset) {
-    await API.instance.client.authentication.reset()
+    await Engine.instance.api.authentication.reset()
   }
   const newProvider = await Engine.instance.api.service(identityProviderPath).create({
     type: 'guest',
@@ -167,7 +188,7 @@ async function _resetToGuestToken(options = { reset: true }) {
   })
   const accessToken = newProvider.accessToken!
   console.log(`Created new guest accessToken: ${accessToken}`)
-  await API.instance.client.authentication.setAccessToken(accessToken as string)
+  await Engine.instance.api.authentication.setAccessToken(accessToken as string)
   return accessToken
 }
 
@@ -176,29 +197,32 @@ export const AuthService = {
     // Oauth callbacks may be running when a guest identity-provider has been deleted.
     // This would normally cause doLoginAuto to make a guest user, which we do not want.
     // Instead, just skip it on oauth callbacks, and the callback handler will log them in.
-    // The client and auth settigns will not be needed on these routes
+    // The client and auth settings will not be needed on these routes
     if (/auth\/oauth/.test(location.pathname)) return
     const authState = getMutableState(AuthState)
+    console.log('authState', authState.get({ noproxy: true }).authUser)
     try {
       const accessToken = !forceClientAuthReset && authState?.authUser?.accessToken?.value
 
       if (forceClientAuthReset) {
-        await API.instance.client.authentication.reset()
+        await Engine.instance.api.authentication.reset()
       }
       if (accessToken) {
-        await API.instance.client.authentication.setAccessToken(accessToken as string)
+        await Engine.instance.api.authentication.setAccessToken(accessToken as string)
       } else {
-        await _resetToGuestToken({ reset: false })
+        const rootDomainToken = await getRootToken()
+        if (!rootDomainToken) await _resetToGuestToken({ reset: false })
+        else await Engine.instance.api.authentication.setAccessToken(rootDomainToken)
       }
 
       let res: AuthenticationResult
       try {
-        res = await API.instance.client.reAuthenticate()
+        res = await Engine.instance.api.reAuthenticate()
       } catch (err) {
         if (err.className === 'not-found' || (err.className === 'not-authenticated' && err.message === 'jwt expired')) {
           authState.merge({ isLoggedIn: false, user: UserSeed, authUser: AuthUserSeed })
           await _resetToGuestToken()
-          res = await API.instance.client.reAuthenticate()
+          res = await Engine.instance.api.reAuthenticate()
         } else {
           logger.error(err, 'Error re-authenticating')
           throw err
@@ -210,7 +234,7 @@ export const AuthService = {
         if (!identityProvider?.id) {
           authState.merge({ isLoggedIn: false, user: UserSeed, authUser: AuthUserSeed })
           await _resetToGuestToken()
-          res = await API.instance.client.reAuthenticate()
+          res = await Engine.instance.api.reAuthenticate()
         }
         const authUser = resolveAuthUser(res)
         // authUser is now { accessToken, authentication, identityProvider }
@@ -231,7 +255,7 @@ export const AuthService = {
 
   async loadUserData(userId: UserID) {
     try {
-      const client = API.instance.client
+      const client = Engine.instance.api
       const user = await client.service(userPath).get(userId)
       if (!user.userSetting) {
         const settingsRes = (await client
@@ -263,7 +287,7 @@ export const AuthService = {
     authState.merge({ isProcessing: true, error: '' })
 
     try {
-      const authenticationResult = await API.instance.client.authenticate({
+      const authenticationResult = await Engine.instance.api.authenticate({
         strategy: 'local',
         email: form.email,
         password: form.password
@@ -377,8 +401,8 @@ export const AuthService = {
 
         if (newTokenResult?.token) {
           getMutableState(AuthState).merge({ isProcessing: true, error: '' })
-          await API.instance.client.authentication.setAccessToken(newTokenResult.token)
-          const res = await API.instance.client.reAuthenticate(true)
+          await Engine.instance.api.authentication.setAccessToken(newTokenResult.token)
+          const res = await Engine.instance.api.reAuthenticate(true)
           const authUser = resolveAuthUser(res)
           await Engine.instance.api.service(identityProviderPath).remove(ipToRemove.id)
           const authState = getMutableState(AuthState)
@@ -394,8 +418,8 @@ export const AuthService = {
     const authState = getMutableState(AuthState)
     authState.merge({ isProcessing: true, error: '' })
     try {
-      await API.instance.client.authentication.setAccessToken(accessToken as string)
-      const res = await API.instance.client.authenticate({
+      await Engine.instance.api.authentication.setAccessToken(accessToken as string)
+      const res = await Engine.instance.api.authenticate({
         strategy: 'jwt',
         accessToken
       })
@@ -410,8 +434,7 @@ export const AuthService = {
       // in properly. This interval waits to make sure the token has been updated before redirecting
       const waitForTokenStored = setInterval(() => {
         timeoutTimer += TIMEOUT_INTERVAL
-        const authData = authState
-        const storedToken = authData.authUser?.accessToken?.value
+        const storedToken = authState.authUser?.accessToken?.value
         if (storedToken === accessToken) {
           clearInterval(waitForTokenStored)
           window.location.href = redirectSuccess
@@ -444,7 +467,7 @@ export const AuthService = {
     const authState = getMutableState(AuthState)
     authState.merge({ isProcessing: true, error: '' })
     try {
-      await API.instance.client.logout()
+      await Engine.instance.api.logout()
       authState.merge({ isLoggedIn: false, user: UserSeed, authUser: AuthUserSeed })
     } catch (_) {
       authState.merge({ isLoggedIn: false, user: UserSeed, authUser: AuthUserSeed })
