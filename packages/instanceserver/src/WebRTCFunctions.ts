@@ -790,9 +790,16 @@ export const handleRequestConsumer = async (
   const { peerID: mediaPeerId, mediaTag, rtpCapabilities, channelID } = action
   const forPeerID = action.$peer
 
-  const producer = Object.values(getState(MediasoupMediaProducerConsumerState)[network.id].producers).find(
-    (p) => p.peerID === mediaPeerId && p.mediaTag === mediaTag
-  )
+  let producer
+  try {
+    producer = Object.values(getState(MediasoupMediaProducerConsumerState)[network.id].producers).find(
+      (p) => p.peerID === mediaPeerId && p.mediaTag === mediaTag
+    )
+    const producerConsumerObjects = getState(MediasoupMediaProducersConsumersObjectsState)
+  } catch (err) {
+    console.log('error getting producer', getState(MediasoupMediaProducerConsumerState), network.id, err)
+    return
+  }
 
   const transport = MediasoupTransportState.getTransport(network.id, 'recv', forPeerID) as WebRTCTransportExtension
 

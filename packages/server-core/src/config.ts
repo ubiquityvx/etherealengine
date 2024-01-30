@@ -23,6 +23,12 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
+import {
+  H264_CODEC,
+  OPUS_STEREO_CODEC,
+  VP8_CODEC,
+  VP9_CODEC
+} from '@etherealengine/spatial/src/networking/constants/VideoConstants'
 import configFile from './appconfig'
 import { SctpParameters } from './types/SctpParameters'
 
@@ -61,42 +67,7 @@ export const config = {
       logTags: ['info', 'ice', 'dtls', 'rtp', 'srtp', 'rtcp']
     },
     router: {
-      mediaCodecs: [
-        {
-          kind: 'audio',
-          mimeType: 'audio/opus',
-          clockRate: 48000,
-          channels: 2
-        },
-        {
-          kind: 'video',
-          mimeType: 'video/VP8',
-          clockRate: 90000,
-          parameters: {
-            //                'x-google-start-bitrate': 1000
-          }
-        },
-        {
-          kind: 'video',
-          mimeType: 'video/h264',
-          clockRate: 90000,
-          parameters: {
-            'packetization-mode': 1,
-            'profile-level-id': '4d0032',
-            'level-asymmetry-allowed': 1
-          }
-        },
-        {
-          kind: 'video',
-          mimeType: 'video/h264',
-          clockRate: 90000,
-          parameters: {
-            'packetization-mode': 1,
-            'profile-level-id': '42e01f',
-            'level-asymmetry-allowed': 1
-          }
-        }
-      ]
+      mediaCodecs: [OPUS_STEREO_CODEC, VP9_CODEC, VP8_CODEC, H264_CODEC]
     },
 
     // rtp listenIps are the most important thing, below. you'll need
@@ -137,43 +108,7 @@ export const localConfig = {
       logTags: ['info', 'ice', 'dtls', 'rtp', 'srtp', 'rtcp']
     },
     router: {
-      mediaCodecs: [
-        {
-          kind: 'audio',
-          mimeType: 'audio/opus',
-          clockRate: 48000,
-          channels: 2
-        },
-        {
-          kind: 'video',
-          mimeType: 'video/VP8',
-          preferredPayloadType: 96,
-          clockRate: 90000,
-          parameters: {
-            //'x-google-start-bitrate': 1000
-          }
-        },
-        {
-          kind: 'video',
-          mimeType: 'video/h264',
-          clockRate: 90000,
-          parameters: {
-            'packetization-mode': 1,
-            'profile-level-id': '4d0032',
-            'level-asymmetry-allowed': 1
-          }
-        },
-        {
-          kind: 'video',
-          mimeType: 'video/h264',
-          clockRate: 90000,
-          parameters: {
-            'packetization-mode': 1,
-            'profile-level-id': '42e01f',
-            'level-asymmetry-allowed': 1
-          }
-        }
-      ]
+      mediaCodecs: [OPUS_STEREO_CODEC, VP9_CODEC, VP8_CODEC, H264_CODEC]
     },
 
     // rtp listenIps are the most important thing, below. you'll need
