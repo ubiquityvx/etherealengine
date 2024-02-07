@@ -131,6 +131,13 @@ export const MediaIconsBox = () => {
     dispatchAction(WidgetAppActions.showWidget({ id: recordingWidget[0], shown: true }))
   }
 
+  const toggleMocap = () => {
+    const mocapWidget = Array.from(RegisteredWidgets.entries()).find(
+      ([_, widget]) => widget.label === 'Mocap' // todo - don't hard code this
+    )!
+    dispatchAction(WidgetAppActions.showWidget({ id: mocapWidget[0], shown: true }))
+  }
+
   const xrSessionActive = xrState.sessionActive.value
   const handleExitSpectatorClick = () => dispatchAction(CameraActions.exitSpectate({}))
 
@@ -189,7 +196,7 @@ export const MediaIconsBox = () => {
             id="UserPoseTracking"
             title={t('user:menu.poseTracking')}
             className={styles.iconContainer + ' ' + (isMotionCaptureEnabled ? styles.on : '')}
-            onClick={() => window.open(`/capture/${location.pathname.split('/')[2]}`, '_blank')}
+            onClick={toggleMocap}
             onPointerUp={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
             onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
             icon={<Icon type={'Accessibility'} />}

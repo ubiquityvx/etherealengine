@@ -66,6 +66,7 @@ import { UndefinedEntity } from '@etherealengine/ecs/src/Entity'
 import { CameraComponent } from '@etherealengine/spatial/src/camera/components/CameraComponent'
 import { EntityTreeComponent } from '@etherealengine/spatial/src/transform/components/EntityTree'
 import { TransformSystem } from '@etherealengine/spatial/src/transform/systems/TransformSystem'
+import { createMocapWidget } from './createMocapWidget'
 import { createWidgetButtonsView } from './ui/WidgetMenuView'
 
 const widgetLeftMenuGripOffset = new Vector3(0.08, 0, -0.05)
@@ -101,6 +102,7 @@ const WidgetUISystemState = defineState({
 const createWidgetMenus = () => {
   createAnchorWidget()
   // createRecordingsWidget()
+  createMocapWidget()
   // createHeightAdjustmentWidget
   // createMediaWidget
 }

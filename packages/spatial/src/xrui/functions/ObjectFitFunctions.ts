@@ -105,9 +105,9 @@ export const ObjectFitFunctions = {
     return ObjectFitFunctions.computeContentFitScale(contentWidth, contentHeight, size.width, size.height, fit)
   },
 
-  attachObjectInFrontOfCamera: (entity: Entity, scale: number, distance: number) => {
+  attachObjectInFrontOfCamera: (entity: Entity, scale: number, distance: number, x = 0, y = 0) => {
     const transform = getComponent(entity, TransformComponent)
-    _mat4.makeTranslation(0, 0, -distance).scale(_vec3.set(scale, scale, 1))
+    _mat4.makeTranslation(x, y, -distance).scale(_vec3.set(scale, scale, 1))
     transform.matrixWorld.multiplyMatrices(
       getComponent(Engine.instance.cameraEntity, CameraComponent).matrixWorld,
       _mat4
