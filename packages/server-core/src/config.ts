@@ -50,46 +50,6 @@ export const config = {
           protocol: 'udp',
           ip: configFile.instanceserver.domain! || '0.0.0.0',
           announcedIp: null! as string,
-          port: process.env.DEV_CHANNEL === 'true ' ? 30000 : 40000
-        },
-        {
-          protocol: 'tcp',
-          ip: configFile.instanceserver.domain! || '0.0.0.0',
-          announcedIp: null! as string,
-          port: process.env.DEV_CHANNEL === 'true' ? 30000 : 40000
-        }
-      ]
-    },
-    worker: {
-      rtcMinPort: 40000,
-      rtcMaxPort: 49999,
-      logLevel: 'info',
-      logTags: ['info', 'ice', 'dtls', 'rtp', 'srtp', 'rtcp']
-    },
-    router: {
-      mediaCodecs: [OPUS_STEREO_CODEC, VP9_CODEC, VP8_CODEC, H264_CODEC]
-    },
-
-    // rtp listenIps are the most important thing, below. you'll need
-    // to set these appropriately for your network for the demo to
-    // run anywhere but on 127.0.0.1
-    webRtcTransport: {
-      listenIps: [{ ip: configFile.instanceserver.domain, announcedIp: null! as string }],
-      initialAvailableOutgoingBitrate: 1000 * 1000 * 1000, //1gbps
-      maxIncomingBitrate: 30 * 1000 * 1000 // 30mbps - this should be set to something; leaving it uncapped causes stuttering
-    }
-  }
-}
-
-export const localConfig = {
-  httpPeerStale: 15000,
-  mediasoup: {
-    webRtcServerOptions: {
-      listenInfos: [
-        {
-          protocol: 'udp',
-          ip: configFile.instanceserver.domain! || '0.0.0.0',
-          announcedIp: null! as string,
           port: process.env.DEV_CHANNEL === 'true' ? 30000 : configFile.instanceserver.rtcStartPrt
         },
         {
@@ -116,7 +76,7 @@ export const localConfig = {
     // run anywhere but on 127.0.0.1
     webRtcTransport: {
       listenIps: [{ ip: null! as string, announcedIp: null! as string }],
-      initialAvailableOutgoingBitrate: 1000 * 1000 * 1000, //1gbps
+      initialAvailableOutgoingBitrate: 10 * 1000 * 1000, //1gbps
       maxIncomingBitrate: 30 * 1000 * 1000 // 30mbps - this should be set to something; leaving it uncapped causes stuttering
     },
 
