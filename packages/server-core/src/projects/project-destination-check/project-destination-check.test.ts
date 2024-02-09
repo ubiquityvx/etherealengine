@@ -476,17 +476,17 @@ const getRepoPackageJson2 = () => ({
   path: 'package.json',
   sha: '76f00e5fd3035ed32f21eecf87a6503547752767',
   size: 1163,
-  url: 'https://api.github.com/repos/EtherealEngine/ee-bot/contents/package.json?ref=master',
-  html_url: 'https://github.com/EtherealEngine/ee-bot/blob/master/package.json',
+  url: 'https://api.github.com/repos/EtherealEngine/ee-bot/contents/package.json?ref=main',
+  html_url: 'https://github.com/EtherealEngine/ee-bot/blob/main/package.json',
   git_url: 'https://api.github.com/repos/EtherealEngine/ee-bot/git/blobs/76f00e5fd3035ed32f21eecf87a6503547752767',
-  download_url: 'https://raw.githubusercontent.com/EtherealEngine/ee-bot/master/package.json',
+  download_url: 'https://raw.githubusercontent.com/EtherealEngine/ee-bot/main/package.json',
   type: 'file',
   content:
     'ewogICJuYW1lIjogImVlLWJvdCIsCiAgInZlcnNpb24iOiAiMC41LjgiLAog\nICJkZXNjcmlwdGlvbiI6ICJBIHRlc3QgYm90IHVzaW5nIHB1cHBldGVlciIs\nCiAgInJlcG9zaXRvcnkiOiB7CiAgICAidHlwZSI6ICJnaXQiLAogICAgInVy\nbCI6ICJnaXQ6Ly9naXRodWIuY29tL2V0aGVyZWFsZW5naW5lL2V0aGVyZWFs\nZW5naW5lLmdpdCIKICB9LAogICJldGhlcmVhbEVuZ2luZSI6IHsKICAgICJ2\nZXJzaW9uIjogIjEuMS4wIgogIH0sCiAgImVuZ2luZXMiOiB7CiAgICAibm9k\nZSI6ICI+PSAxNi4zLjAiCiAgfSwKICAicHVibGlzaENvbmZpZyI6IHsKICAg\nICJhY2Nlc3MiOiAicHVibGljIgogIH0sCiAgIm5wbUNsaWVudCI6ICJucG0i\nLAogICJtYWluIjogInNyYy9pbmRleC50cyIsCiAgInNjcmlwdHMiOiB7CiAg\nICAiZGV2IjogInRzLW5vZGUgLS1zd2MgLi9zcmMvaW5kZXgudHMiLAogICAg\nImRldi1rb2EiOiAidHMtbm9kZSAtLXN3YyAuL3NyYy9pbmRleF9rb2EudHMi\nLAogICAgImJ1aWxkIjogInRzYyIsCiAgICAiY2hlY2stZXJyb3JzIjogInRz\nYyAtLW5vZW1pdCIsCiAgICAidmFsaWRhdGUiOiAibnBtIHJ1biB0ZXN0IiwK\nICAgICJmb3JtYXQiOiAicHJldHRpZXIgLS13cml0ZSBcIioqLyoue3RzLHRz\neH1cIiIsCiAgICAicHJlY29tbWl0IjogIm5vLW1hc3Rlci1jb21taXRzIC1i\nIG1hc3RlciIKICB9LAogICJkZXBlbmRlbmNpZXMiOiB7CiAgICAiZ2wtbWF0\ncml4IjogIl4zLjQuMyIsCiAgICAia29hIjogIl4yLjE0LjIiLAogICAgImtv\nYS1ib2R5cGFyc2VyIjogIl40LjQuMCIsCiAgICAia29hLXJvdXRlciI6ICJe\nMTIuMC4wIiwKICAgICJwdXBwZXRlZXIiOiAiXjE5LjYuMyIsCiAgICAidHMt\nbm9kZSI6ICIxMC45LjEiLAogICAgIndlYnhyLWVtdWxhdG9yIjogImV0aGVy\nZWFsZW5naW5lL1dlYlhSLWVtdWxhdG9yLWV4dGVuc2lvbiIKICB9LAogICJs\naWNlbnNlIjogIklTQyIsCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJA\nc3djL2NvcmUiOiAiMS4zLjQxIiwKICAgICJAdHlwZXMvZXhwZWN0LXB1cHBl\ndGVlciI6ICJeNS4wLjMiLAogICAgIkB0eXBlcy9rb2EtYm9keXBhcnNlciI6\nICJeNC4zLjEwIiwKICAgICJAdHlwZXMva29hLXJvdXRlciI6ICJeNy40LjQi\nLAogICAgIkB0eXBlcy9tb2NoYSI6ICJeMTAuMC4xIgogIH0KfQo=\n',
   encoding: 'base64',
   _links: {
-    self: 'https://api.github.com/repos/EtherealEngine/ee-bot/contents/package.json?ref=master',
+    self: 'https://api.github.com/repos/EtherealEngine/ee-bot/contents/package.json?ref=main',
     git: 'https://api.github.com/repos/EtherealEngine/ee-bot/git/blobs/76f00e5fd3035ed32f21eecf87a6503547752767',
-    html: 'https://github.com/EtherealEngine/ee-bot/blob/master/package.json'
+    html: 'https://github.com/EtherealEngine/ee-bot/blob/main/package.json'
   }
 })
