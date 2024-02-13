@@ -23,32 +23,16 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import React from 'react'
-import { twMerge } from 'tailwind-merge'
+import { exec } from 'child_process'
 
-const sizes = {
-  small: 'h-1.5',
-  default: 'h-2.5',
-  large: 'h-4',
-  extralarge: 'h-6'
+export function execPromise(cmd, opts) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, opts, (error, stdout, stderr) => {
+      if (error) {
+        console.warn(error)
+      }
+      console.log(stdout ? stdout : stderr)
+      resolve(stdout ? stdout : stderr)
+    })
+  })
 }
-
-export interface ProgressProps extends React.HTMLAttributes<HTMLProgressElement> {
-  className?: string
-  value: number
-  size?: keyof typeof sizes
-  barClassName?: string
-}
-
-const Progress = ({ className, barClassName, value, size = 'default' }: ProgressProps) => {
-  const twClassName = twMerge(sizes[size], 'w-full rounded-full bg-gray-200 dark:bg-gray-700', className)
-  const twBarClassName = twMerge(sizes[size], 'rounded-full bg-blue-800', barClassName)
-
-  return (
-    <div className={twClassName}>
-      <div className={twBarClassName} style={{ width: `${value}%` }} />
-    </div>
-  )
-}
-
-export default Progress
