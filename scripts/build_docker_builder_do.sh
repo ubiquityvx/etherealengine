@@ -3,7 +3,7 @@ set -e
 set -x
 
 STAGE="dig"
-TAG="dig-do-76.1.76677"
+TAG="dig-do-35.32.55"
 LABEL="etherealengine/etherealengine"
 DOCR_REGISTRY="registry.digitalocean.com/etherealengine"
 REPO_NAME="etherealengine-dig"
@@ -12,6 +12,11 @@ EEVERSION=$(jq -r .version ./packages/server-core/package.json)
 echo "Entering the script"
 
 doctl registry login
+
+mkdir -p ./project-package-jsons/projects/default-project
+cp packages/projects/default-project/package.json ./project-package-jsons/projects/default-project
+find packages/projects/projects/ -name package.json -exec bash -c 'mkdir -p ./project-package-jsons/$(dirname $1) && cp $1 ./project-package-jsons/$(dirname $1)' - '{}' \;
+
 
 docker buildx build \
     --load \

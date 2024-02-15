@@ -22,3 +22,4 @@ COPY project-package-jsons ./
 
 ARG NODE_ENV
 RUN npm install --loglevel notice --legacy-peer-deps
+RUN npm install -g cli @aws-sdk/client-s3
