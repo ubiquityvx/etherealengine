@@ -3,28 +3,98 @@
 <head>
     <title>Local Storage Accessor</title>
     <script>
-        const allowedDomains = "<ALLOWED_DOMAINS>"
-        document.domain = "<ROOT_HOSTNAME>";
-        console.log('Loaded localstorage accessor')
-        window.onmessage = function(e) {
-            console.log('GOT MESSAGE', e)
-            if (allowedDomains.indexOf(e.origin) < 0) return;
-            console.log('Message was from allowed domain')
-            var payload = JSON.parse(e.data);
-            switch(payload.method) {
-                case 'set':
-                    localStorage.setItem(payload.key, JSON.stringify(payload.data));
-                    break;
-                case 'get':
-                    var parent = window.parent;
-                    var data = localStorage.getItem(payload.key);
-                    parent.postMessage(data, "*");
-                    break;
-                case 'remove':
-                    localStorage.removeItem(payload.key);
-                    break;
+        function createOnmessage() {
+            const allowedDomains = "<ALLOWED_DOMAINS>"
+            window.onmessage = function(e) {
+                if (allowedDomains.indexOf(e.origin) < 0) return;
+                var payload = JSON.parse(e.data);
+                switch (payload.method) {
+                    case 'set':
+                        localStorage.setItem(payload.key, JSON.stringify(payload.data));
+                        document.cookie = `${payload.key}=${JSON.stringify(payload.data)}; SameSite=None; Secure`
+                        break;
+                    case 'get':
+                        var parent = window.parent;
+                        const data = document.cookie
+                            .split("; ")
+                            .find((row) => row.startsWith(`${payload.key}=`))
+                            ?.split("=")[1];
+                        console.log('got cookie', data)
+                        parent.postMessage(data, e.origin);
+                        break;
+                    case 'remove':
+                        localStorage.removeItem(payload.key);
+                        break;
+                }
             }
-        };
+        }
+
+        window.onload = async() => {
+            if (!document.hasStorageAccess()) createOnmessage()
+            else {
+                const hasAccess = await document.hasStorageAccess()
+                console.log('hasAccess', hasAccess)
+                if (hasAccess) createOnmessage()
+                else {
+                    try {
+                        const permission = await navigator.permissions.query({
+                            name: 'storage-access'
+                        })
+
+                        console.log('permission', permission, permission.state)
+
+                        if (permission.state === 'granted') {
+                            await document.requestStorageAccess()
+                            createOnmessage()
+                        } else if (permission.state === 'prompt') {
+                            document.getElementById('allow-push-notification-bar').show();
+                            document.getElementById('allow-push-notification').click(async function () {
+                                document.getElementById('allow-push-notification-bar').hide();
+                                try {
+                                    await document.requestStorageAccess();
+                                    createOnmessage();
+                                } catch (err) {
+                                    // If there is an error obtaining storage access.
+                                    console.error(`Error obtaining storage access: ${err}.
+                                Please sign in.`);
+                                }
+                            });
+                            // window.onclick = async() => {
+                            //     console.log('IFRAME CLICKED')
+                            //     try {
+                            //         await document.requestStorageAccess();
+                            //         createOnmessage();
+                            //     } catch (err) {
+                            //         // If there is an error obtaining storage access.
+                            //         console.error(`Error obtaining storage access: ${err}.
+                            //     Please sign in.`);
+                            //     }
+                            // }
+                        } else if (permission.state === 'denied') createOnmessage()
+                    } catch(err) {
+                        console.log('Could not access permission state', err)
+                        createOnmessage()
+                    }
+                }
+            }
+        }
     </script>
 </head>
+<body>
+<div id="allow-push-notification-bar" class="allow-push-notification-bar">
+    <div class="content">
+        <div class="text">
+            Want to get notification from us?
+        </div>
+        <div class="buttons-more">
+            <button type="button" class="ok-button button-1" id="allow-push-notification">
+                Yes
+            </button>
+            <button type="button" class="ok-button button-1" id="close-push-notification">
+                No
+            </button>
+        </div>
+    </div>
+</div>
+</body>
 </html>

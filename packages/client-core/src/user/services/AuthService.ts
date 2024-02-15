@@ -130,14 +130,18 @@ const getRootToken = async(): Promise<string> => {
   }
 
   console.log('retrieving token from root storage')
-  win.postMessage(JSON.stringify({key: `${stateNamespaceKey}.AuthState.authUser`, method: "get"}), "*");
+  win.postMessage(JSON.stringify({key: `${stateNamespaceKey}.AuthState.authUser`, method: "get"}), "https://local.etherealengine.org");
   return await new Promise(resolve => {
     window.onmessage = function(e) {
-      console.log('got message from iframe')
+      console.log('got message from iframe', e, e.data)
       if (e.origin !== config.client.clientUrl) return
-      const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data
-      console.log('data from origin', data)
-      resolve(data?.accessToken)
+      try {
+        const value = JSON.parse(e.data)
+        console.log('value', value)
+        resolve(value?.accessToken)
+      } catch {
+        resolve(e.data)
+      }
     };
   })
 }
@@ -211,6 +215,7 @@ export const AuthService = {
         await Engine.instance.api.authentication.setAccessToken(accessToken as string)
       } else {
         const rootDomainToken = await getRootToken()
+        console.log('rootDomainToken', rootDomainToken)
         if (!rootDomainToken) await _resetToGuestToken({ reset: false })
         else await Engine.instance.api.authentication.setAccessToken(rootDomainToken)
       }

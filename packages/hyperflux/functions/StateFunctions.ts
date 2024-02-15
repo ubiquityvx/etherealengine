@@ -37,8 +37,6 @@ import { HyperFlux, HyperStore } from './StoreFunctions'
 
 export * from '@hookstate/core'
 
-const logger = multiLogger.child({ component: 'hyperflux:State' })
-
 export const NO_PROXY = { noproxy: true }
 export const NO_PROXY_STEALTH = { noproxy: true, stealth: true }
 
@@ -152,11 +150,8 @@ export const syncStateWithLocalStorage = (
 
               console.log('win', win)
 
-              const obj = {
-                [`${stateNamespaceKey}.${stateDefinition.name}.${key}`]: JSON.stringify(state[key].get({noproxy: true}))
-              }
-              console.log('writing obj', obj)
-              win.postMessage(JSON.stringify({key: 'storage', method: "set", data: obj}), "*");
+              console.log('writing data to iframe', `${stateNamespaceKey}.${stateDefinition.name}.${key}`, state[key].get(NO_PROXY))
+              win.postMessage(JSON.stringify({key: `${stateNamespaceKey}.${stateDefinition.name}.${key}`, method: "set", data: state[key].get(NO_PROXY)}), "https://local.etherealengine.org");
             }
           }
         }

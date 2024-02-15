@@ -42,18 +42,14 @@ cli.main(async () => {
     })
   }
 
-  console.log('start')
   const localStorageAccessor = readFileSync(path.join(appRootPath.path, 'packages', 'client', 'public', 'local-storage-accessor-template.html')).toString()
-
-  console.log('VITE_APP_HOST', globalThis.process.env.VITE_APP_HOST)
 
   const localBuildOrDev =
       process.env.APP_ENV === 'development' || globalThis.process.env.VITE_LOCAL_BUILD === 'true'
   const clientUrl = localBuildOrDev && globalThis.process.env.VITE_LOCAL_NGINX !== 'true'
           ? `https://${globalThis.process.env.VITE_APP_HOST}:${globalThis.process.env.VITE_APP_PORT}`
           : `https://${globalThis.process.env.VITE_APP_HOST}`
-  const updated = localStorageAccessor.replace('<ROOT_HOSTNAME>', globalThis.process.env.VITE_APP_HOST || 'localhost').replace('"<ALLOWED_DOMAINS>"', `[\`${clientUrl}\`]`)
-  console.log('updated', updated)
+  const updated = localStorageAccessor.replace('"<ALLOWED_DOMAINS>"', `["${clientUrl}", "https://cool.pants.com"]`)
 
   writeFileSync(path.join(appRootPath.path, 'packages', 'client', 'public', 'local-storage-accessor.html'), Buffer.from(updated))
   process.exit(0)

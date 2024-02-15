@@ -97,7 +97,8 @@ export const configurePrimus =
     const origin = [
       'https://' + appConfig.server.clientHost,
       'capacitor://' + appConfig.server.clientHost,
-      'ionic://' + appConfig.server.clientHost
+      'ionic://' + appConfig.server.clientHost,
+      'https://cool.pants.com'
     ]
     if (!instanceserver) origin.push('https://localhost:3001')
     app.configure(
