@@ -1,8 +1,7 @@
 ARG ECR_URL
 ARG REPO_NAME
 ARG STAGE
-ARG TAG="dig-do-88.4.2555"
-FROM ${ECR_URL}/${REPO_NAME}-root:${TAG} as apiBuilder
+FROM ${ECR_URL}/${REPO_NAME}-root:latest_${STAGE} as apiBuilder
 
 # Create app directory
 WORKDIR /app

@@ -1,8 +1,7 @@
-ARG STAGE="dig"
-ARG ECR_URL="registry.digitalocean.com/etherealengine"
-ARG REPO_NAME="etherealengine"
-ARG TAG="dig-do-88.4.2555"
-FROM ${ECR_URL}/${REPO_NAME}-dig-root:${TAG} as builder
+ARG ECR_URL
+ARG REPO_NAME
+ARG STAGE
+FROM ee-base:latest as builder
 
 COPY . .
 
