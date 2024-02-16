@@ -163,6 +163,8 @@ for (const entry of generatorTypes) {
   }
 }
 
+export const fileTypeCanHaveThumbnail = (type: string): boolean => thumbnailGeneratorsByType.has(type)
+
 export const createThumbnailForResource = async (resource: StaticResourceType): Promise<Blob | null> => {
   const generator = thumbnailGeneratorsByType.get(resource.mimeType)
   if (generator == null) {
