@@ -23,6 +23,8 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
+import { StaticResourceType } from '@etherealengine/common/src/schema.type.module'
+
 // Adapted from https://github.com/codepo8/canvasthumber
 function resize(imageWidth: number, imageHeight: number, thumbWidth: number, thumbHeight: number) {
   let w = 0,
@@ -95,8 +97,8 @@ export async function generateMediaThumbnail(
   height = 256,
   background = '#000'
 ): Promise<Blob | null> {
-  const elWidth = el instanceof HTMLInputElement ? el.width : (el as HTMLVideoElement).videoWidth
-  const elHeight = el instanceof HTMLInputElement ? el.height : (el as HTMLVideoElement).videoHeight
+  const elWidth = el instanceof HTMLImageElement ? el.width : (el as HTMLVideoElement).videoWidth
+  const elHeight = el instanceof HTMLImageElement ? el.height : (el as HTMLVideoElement).videoHeight
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
@@ -120,4 +122,52 @@ export function getCanvasBlob(canvas: HTMLCanvasElement, fileType = 'image/jpeg'
   } else {
     return new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, fileType, quality))
   }
+}
+
+const generatorTypes = [
+  {
+    types: ['image/jpeg', 'image/jpg', 'image/png', 'jpeg', 'jpg', 'png'], // TODO: , ktx2
+    gen: async (blob) => {
+      return await generateImageFileThumbnail(blob, 256, 256, 'transparent')
+    }
+  },
+  {
+    types: ['application/vnd.apple.mpegurl', 'm3u8', 'mp4', 'video/mp4'],
+    gen: async (blob) => {
+      return await generateVideoFileThumbnail(blob, 256, 256, 'transparent')
+    }
+  },
+  {
+    types: [
+      'fbx',
+      'glb',
+      'gltf',
+      'gltf-binary',
+      'model/fbx',
+      'model/glb',
+      'model/gltf',
+      'model/gltf-binary',
+      'model/usdz',
+      'model/vrm',
+      'usdz',
+      'vrm'
+    ],
+    gen: null // TODO: model thumbnail, based on ECS preview support
+  }
+]
+
+const thumbnailGeneratorsByType = new Map()
+for (const entry of generatorTypes) {
+  for (const type of entry.types) {
+    thumbnailGeneratorsByType.set(type, entry.gen)
+  }
+}
+
+export const createThumbnailForResource = async (resource: StaticResourceType): Promise<Blob | null> => {
+  const generator = thumbnailGeneratorsByType.get(resource.mimeType)
+  if (generator == null) {
+    return null
+  }
+  const blob = await (await fetch(resource.url)).blob()
+  return (await generator(blob)) ?? null
 }

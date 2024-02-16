@@ -49,9 +49,9 @@ import { EntityTreeComponent } from '@etherealengine/spatial/src/transform/compo
 import { TransformComponent } from '@etherealengine/spatial/src/transform/components/TransformComponent'
 import { KTX2Encoder } from '@etherealengine/xrui/core/textures/KTX2Encoder'
 
+import { getCanvasBlob } from '@etherealengine/client-core/src/common/utils'
 import { CameraComponent } from '@etherealengine/spatial/src/camera/components/CameraComponent'
 import { EditorState } from '../services/EditorServices'
-import { getCanvasBlob } from './thumbnails'
 
 function getResizedCanvas(canvas: HTMLCanvasElement, width: number, height: number) {
   const tmpCanvas = document.createElement('canvas')
