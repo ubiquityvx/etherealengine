@@ -27,8 +27,13 @@ import { Paginated } from '@feathersjs/feathers/lib'
 
 import { defineState, getMutableState } from '@etherealengine/hyperflux'
 
-import { FileBrowserContentType, fileBrowserPath } from '@etherealengine/common/src/schema.type.module'
+import {
+  FileBrowserContentType,
+  fileBrowserPath,
+  staticResourcePath
+} from '@etherealengine/common/src/schema.type.module'
 import { Engine } from '@etherealengine/ecs/src/Engine'
+import { saveResourceThumbnail } from '../functions/saveResourceThumbnail'
 import { NotificationService } from './NotificationService'
 
 export const FILES_PAGE_LIMIT = 100
@@ -64,6 +69,27 @@ export const FileBrowserService = {
           directory
         }
       })) as Paginated<FileBrowserContentType>
+
+      Promise.all(
+        files.data.map(async (file) => {
+          const { key } = file
+          const resources = await Engine.instance.api.service(staticResourcePath).find({
+            query: { key }
+          })
+
+          if (resources.data.length === 0) {
+            return
+          }
+          const resource = resources.data[0]
+          if (resource.thumbnailKey != null) {
+            return
+          }
+          await saveResourceThumbnail(resource)
+
+          // TODO: cache pending thumbnail promises by static resource key
+        })
+      )
+
       fileBrowserState.merge({
         files: files.data,
         skip: files.skip,
