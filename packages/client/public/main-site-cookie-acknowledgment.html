@@ -1,0 +1,81 @@
+
+<html lang="en">
+<!--<head id="head">-->
+<!--    <title>Grant access to cookies</title>-->
+<!--    <script>-->
+<!--        window.onload = async () => {-->
+<!--            document.getElementById('allow-push-notification').onclick = async function () {-->
+<!--                console.log('GOT CLICK')-->
+<!--                // document.getElementById('allow-push-notification-bar').hide();-->
+<!--                try {-->
+<!--                    await document.requestStorageAccess();-->
+<!--                    console.log('CLOSING WINDOW')-->
+<!--                    window.close()-->
+<!--                } catch (err) {-->
+<!--                    // If there is an error obtaining storage access.-->
+<!--                    console.error(`Error obtaining storage access: ${err}.-->
+<!--                                    Please sign in.`);-->
+<!--                }-->
+<!--            }-->
+<!--        }-->
+<!--    </script>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div id="allow-push-notification-bar" class="allow-push-notification-bar">-->
+<!--    <div class="content">-->
+<!--        <div class="text">-->
+<!--            Click to grant access-->
+<!--        </div>-->
+<!--        <div class="buttons-more">-->
+<!--            <button type="button" class="ok-button button-1" id="allow-push-notification">-->
+<!--                Yes-->
+<!--            </button>-->
+<!--            <button type="button" class="ok-button button-1" id="close-push-notification">-->
+<!--                No-->
+<!--            </button>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--</body>-->
+<head>
+    <title>Request Storage Access</title>
+    <link rel="stylesheet" href="content/basic.css">
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', event => {
+            const data = JSON.parse(document.cookie
+                .split("; ")
+                .find((row) => row.startsWith('ee.hyperflux.AuthState.authUser='))
+                ?.split("=")[1])
+            console.log('data', data)
+            const token = data.accessToken
+            console.log('token', token)
+            const userId = data.identityProvider.userId
+            console.log('userId', userId)
+            const xhr = new XMLHttpRequest();
+            xhr.onload = () => {
+                console.log('on load', this.readyState, this.status, xhr.readyState, xhr.status)
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log('responseText', xhr.responseText)
+                    console.log('JSON parsed responseText', JSON.parse(xhr.responseText))
+                    const username = JSON.parse(xhr.responseText).name
+                    console.log('username', username)
+                    document.getElementById('mainText').textContent = document.getElementById('mainText').textContent.replace('your login', `your login as ${username}`)
+                }
+            }
+            xhr.open('GET', `https://api-local.etherealengine.org/user/${userId}`, true)
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+            xhr.send()
+            console.log('request sent')
+            document.getElementById('confirmButton').addEventListener("click", event => {
+                document.cookie = 'visited=true'
+                // Just go back to the outside iframe we came from.
+                window.close()
+            });
+        });
+    </script>
+</head>
+<body>
+<h2 id="mainText">This domain runs on Ethereal Engine. To automatically use your login across all Ethereal Engine-powered domains, please click the button.</h2>
+<button id="confirmButton">Click to confirm</button>
+</body>
+</html>

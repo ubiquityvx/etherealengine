@@ -52,7 +52,7 @@
   <body>
     <div id="root"  style='z-index: 1; margin: 0; width: 100%; height: 100%; position: absolute; pointer-events: none;'></div>
 
-    <iframe style="height: 500px; width: 500px;" id="local-storage-accessor" src="<%- hostLocalStorageAccessor %>" sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin">COOL PANTS</iframe>
+    <iframe style="display: none;" id="local-storage-accessor" src="<%- hostLocalStorageAccessor %>" sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin"></iframe>
     <script type="module" src="/src/main.tsx"></script>
     <canvas id='engine-renderer-canvas' tabindex="1" style='outline: none; z-index: 0; width: 100%; height: 100%; position: fixed; -webkit-user-select: none; pointer-events: auto; user-select: none'></canvas>
   </body>

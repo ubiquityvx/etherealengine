@@ -49,7 +49,7 @@ cli.main(async () => {
   const clientUrl = localBuildOrDev && globalThis.process.env.VITE_LOCAL_NGINX !== 'true'
           ? `https://${globalThis.process.env.VITE_APP_HOST}:${globalThis.process.env.VITE_APP_PORT}`
           : `https://${globalThis.process.env.VITE_APP_HOST}`
-  const updated = localStorageAccessor.replace('"<ALLOWED_DOMAINS>"', `["${clientUrl}", "https://cool.pants.com"]`)
+  const updated = localStorageAccessor.replace('"<ALLOWED_DOMAINS>"', `["${clientUrl}", "https://cool.pants.com", "https://cool.pants.com", "https://hot.pants.com", "https://warm.pants.com", 'https://cool.pants.com']`)
 
   writeFileSync(path.join(appRootPath.path, 'packages', 'client', 'public', 'local-storage-accessor.html'), Buffer.from(updated))
   process.exit(0)

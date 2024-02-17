@@ -33,6 +33,7 @@ import { AuthUserSeed, resolveAuthUser } from '@etherealengine/common/src/interf
 import multiLogger from '@etherealengine/common/src/logger'
 import { AuthStrategiesType } from '@etherealengine/common/src/schema.type.module'
 import { defineState, getMutableState, getState, stateNamespaceKey, syncStateWithLocalStorage } from '@etherealengine/hyperflux'
+import openPopup from "../../util/open-popup";
 
 import {
   AvatarID,
@@ -120,6 +121,8 @@ const resolveWalletUser = (credentials: any): UserType => {
   }
 }
 
+
+
 const getRootToken = async(): Promise<string> => {
   const iframe = document.getElementById('local-storage-accessor') as HTMLFrameElement
   let win;
@@ -129,21 +132,43 @@ const getRootToken = async(): Promise<string> => {
     win = iframe!.contentWindow;
   }
 
-  console.log('retrieving token from root storage')
-  win.postMessage(JSON.stringify({key: `${stateNamespaceKey}.AuthState.authUser`, method: "get"}), "https://local.etherealengine.org");
-  return await new Promise(resolve => {
-    window.onmessage = function(e) {
-      console.log('got message from iframe', e, e.data)
-      if (e.origin !== config.client.clientUrl) return
-      try {
-        const value = JSON.parse(e.data)
-        console.log('value', value)
-        resolve(value?.accessToken)
-      } catch {
-        resolve(e.data)
-      }
-    };
+  console.log('posting checkAccess')
+  win.postMessage(JSON.stringify({ method: 'checkAccess' }), 'https://local.etherealengine.org')
+  const hasAccess = await new Promise(resolve => {
+    const hasAccessListener = async function(e) {
+      console.log('got message from iframe for hasAccessListener', e, e.data)
+      window.removeEventListener('message', hasAccessListener)
+      // if (e.data === 'false') {
+        console.log('opening main-site-cookie')
+        await openPopup({ url: 'https://local.etherealengine.org/main-site-cookie-acknowledgment.html', title: '_blank', w: 200, h: 300 })
+        resolve(true)
+      // }
+      // else resolve(true)
+    }
+    window.addEventListener('message', hasAccessListener)
   })
+  console.log('retrieving token from root storage')
+  if (hasAccess) {
+    win.postMessage(JSON.stringify({
+      key: `${stateNamespaceKey}.AuthState.authUser`,
+      method: "get"
+    }), "https://local.etherealengine.org");
+    return await new Promise(resolve => {
+      const getIframeResponse = function (e) {
+        console.log('got message from iframe for getIframeResponse', e, e.data)
+        window.removeEventListener('message', getIframeResponse)
+        if (e.origin !== config.client.clientUrl) return
+        try {
+          const value = JSON.parse(e.data)
+          console.log('value', value)
+          resolve(value?.accessToken)
+        } catch {
+          resolve(e.data)
+        }
+      }
+      window.addEventListener('message', getIframeResponse)
+    })
+  } else return Promise.resolve('false')
 }
 
 export const AuthState = defineState({
@@ -206,18 +231,16 @@ export const AuthService = {
     const authState = getMutableState(AuthState)
     console.log('authState', authState.get({ noproxy: true }).authUser)
     try {
-      const accessToken = !forceClientAuthReset && authState?.authUser?.accessToken?.value
+      const rootDomainToken = await getRootToken()
+      console.log('rootDomainToken', rootDomainToken)
 
       if (forceClientAuthReset) {
         await Engine.instance.api.authentication.reset()
       }
-      if (accessToken) {
-        await Engine.instance.api.authentication.setAccessToken(accessToken as string)
+      if (rootDomainToken) {
+        await Engine.instance.api.authentication.setAccessToken(rootDomainToken as string)
       } else {
-        const rootDomainToken = await getRootToken()
-        console.log('rootDomainToken', rootDomainToken)
-        if (!rootDomainToken) await _resetToGuestToken({ reset: false })
-        else await Engine.instance.api.authentication.setAccessToken(rootDomainToken)
+        await _resetToGuestToken({ reset: false })
       }
 
       let res: AuthenticationResult
