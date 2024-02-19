@@ -41,6 +41,7 @@ import { Entity, UndefinedEntity } from '@etherealengine/ecs/src/Entity'
 import { useEntityContext } from '@etherealengine/ecs/src/EntityFunctions'
 import { defineQuery } from '@etherealengine/ecs/src/QueryFunctions'
 import { Raycaster } from 'three'
+import { TransformComponent } from '../../SpatialModule'
 import { XRHandComponent, XRSpaceComponent } from '../../xr/XRComponents'
 import { ReferenceSpace } from '../../xr/XRState'
 import { ButtonStateMap } from '../state/ButtonState'
@@ -118,6 +119,8 @@ export const InputSourceComponent = defineComponent({
     if (source.hand) {
       setComponent(entity, XRHandComponent)
     }
+
+    setComponent(entity, TransformComponent)
   },
 
   entitiesByInputSource: new WeakMap<XRInputSource>(),
