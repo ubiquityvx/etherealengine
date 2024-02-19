@@ -288,8 +288,8 @@ const useNonSpatialInputSources = () => {
       if (down) buttonState[code] = createInitialButtonState()
       else if (buttonState[code]) buttonState[code].up = true
     }
-    canvas.addEventListener('keyup', onKeyEvent)
-    canvas.addEventListener('keydown', onKeyEvent)
+    document.addEventListener('keyup', onKeyEvent)
+    document.addEventListener('keydown', onKeyEvent)
 
     const handleTouchDirectionalPad = (event: CustomEvent): void => {
       const { stick, value }: { stick: 'LeftStick' | 'RightStick'; value: { x: number; y: number } } = event.detail
@@ -318,8 +318,8 @@ const useNonSpatialInputSources = () => {
       canvas.removeEventListener('gesturestart', preventDefault)
       canvas.removeEventListener('contextmenu', preventDefault)
       canvas.removeEventListener('keydown', preventDefaultKeyDown, false)
-      canvas.removeEventListener('keyup', onKeyEvent)
-      canvas.removeEventListener('keydown', onKeyEvent)
+      document.removeEventListener('keyup', onKeyEvent)
+      document.removeEventListener('keydown', onKeyEvent)
       document.removeEventListener('touchstickmove', handleTouchDirectionalPad)
       canvas.removeEventListener('wheel', onWheelEvent)
       removeEntity(eid)
