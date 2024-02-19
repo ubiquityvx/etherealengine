@@ -23,7 +23,12 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import { VRM, VRMHumanBoneName, VRMHumanBoneParentMap } from '@pixiv/three-vrm'
+import ECS, { Entity } from '@etherealengine/ecs'
+import { getState } from '@etherealengine/hyperflux'
+import { InputSourceComponent } from '@etherealengine/spatial/src/input/components/InputSourceComponent'
+import { XRJointAvatarBoneMap, XRJointParentMap } from '@etherealengine/spatial/src/xr/XRComponents'
+import { XRState } from '@etherealengine/spatial/src/xr/XRState'
+import { VRM, VRMHumanBoneName } from '@pixiv/three-vrm'
 import { Quaternion } from 'three'
 
 /**
@@ -58,17 +63,23 @@ const vrmRightHandJointNames = vrmUnprefixedHandJointNames.map((bone) => `right$
 
 const restHandSpaceRotationInv = new Quaternion()
 
-export const applyXRHandPoses = (vrm: VRM, handedness: 'left' | 'right', rotations: Float32Array) => {
+export const applyXRHandPoses = (vrm: VRM, inputSourceEid: Entity) => {
+  const inputSource = ECS.getComponent(inputSourceEid, InputSourceComponent)
+  if (!inputSource.source.hand) return
+  const handedness = inputSource.source?.handedness
   const vrmJointNames = handedness === 'left' ? vrmLeftHandJointNames : vrmRightHandJointNames
-  for (const vrmJointName of vrmJointNames) {
-    const parentBoneName = VRMHumanBoneParentMap[vrmJointName]
-    const bone = vrm.humanoid.getNormalizedBone(vrmJointName)
-    const restRotation = vrm.humanoid.normalizedRestPose[vrmJointName]?.rotation
-    if (!bone?.node || !parentBoneName || !restRotation) continue
-    restHandSpaceRotationInv.fromArray(restRotation).invert()
 
-    const parentRestHandSpaceRotation = vrm.humanoid.normalizedRestPose[parentBoneName]?.rotation
-
-    bone.node.quaternion.fromArray(rotations, i * 4)
+  const xrFrame = getState(XRState).xrFrame
+  for (const name of vrmJointNames) {
+    const bone = vrm.humanoid.getNormalizedBone(name)
+    const xrJointName = XRJointAvatarBoneMap[name]
+    const xrParentJointName = XRJointParentMap[name]
+    const xrJoint = inputSource.source.hand!.get(xrJointName)
+    const xrParentJoint = inputSource.source.hand!.get(xrParentJointName)
+    if (!bone || !xrJoint || !xrParentJoint) continue
+    const pose = xrFrame?.getJointPose?.(xrJoint, xrParentJoint)
+    if (!pose) continue
+    const rotation = pose.transform.orientation
+    bone.node.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w)
   }
 }

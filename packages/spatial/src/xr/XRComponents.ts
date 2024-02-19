@@ -27,11 +27,12 @@ import { useEffect } from 'react'
 
 import { getState } from '@etherealengine/hyperflux'
 
+import { Engine, UndefinedEntity } from '@etherealengine/ecs'
 import { defineComponent, setComponent, useOptionalComponent } from '@etherealengine/ecs/src/ComponentFunctions'
 import { useEntityContext } from '@etherealengine/ecs/src/EntityFunctions'
-import { matches } from '../common/functions/MatchesUtils'
+import { EntityTreeComponent } from '../transform/components/EntityTree'
 import { TransformComponent } from '../transform/components/TransformComponent'
-import { XRState } from './XRState'
+import { ReferenceSpace, XRState } from './XRState'
 
 /** Maps each XR Joint to it's parent joint */
 export const XRJointParentMap = {
@@ -118,36 +119,8 @@ export const XRJointBones = [
   'pinky-finger-tip'
 ] as XRHandJoint[]
 
-export const XRLeftHandComponent = defineComponent({
-  name: 'XRLeftHandComponent',
-
-  onInit: (entity) => {
-    return {
-      hand: null! as XRHand,
-      rotations: new Float32Array(4 * 19)
-    }
-  },
-
-  onSet: (entity, component, json) => {
-    if (!json) return
-    if (matches.object.test(json.hand)) component.hand.set(json.hand)
-  }
-})
-
-export const XRRightHandComponent = defineComponent({
-  name: 'XRRightHandComponent',
-
-  onInit: (entity) => {
-    return {
-      hand: null! as XRHand,
-      rotations: new Float32Array(4 * 19)
-    }
-  },
-
-  onSet: (entity, component, json) => {
-    if (!json) return
-    if (matches.object.test(json.hand)) component.hand.set(json.hand)
-  }
+export const XRHandComponent = defineComponent({
+  name: 'XRHandComponent'
 })
 
 export const XRHitTestComponent = defineComponent({
@@ -237,11 +210,27 @@ export const XRSpaceComponent = defineComponent({
   name: 'XRSpace',
 
   onInit: (entity) => {
-    return null! as XRSpace
+    return {
+      space: null! as XRSpace,
+      baseSpace: null! as XRSpace
+    }
   },
 
-  onSet: (entity, component, space: XRSpace) => {
-    component.set(space)
+  onSet: (entity, component, args: { space: XRSpace; baseSpace: XRSpace }) => {
+    component.space.set(args.space)
+    component.baseSpace.set(args.baseSpace)
+
+    let parentEntity = UndefinedEntity
+    switch (args.baseSpace) {
+      case ReferenceSpace.localFloor:
+        parentEntity = Engine.instance.originEntity
+        break
+      case ReferenceSpace.viewer:
+        parentEntity = Engine.instance.cameraEntity
+        break
+    }
+
+    setComponent(entity, EntityTreeComponent, { parentEntity })
     setComponent(entity, TransformComponent)
   }
 })

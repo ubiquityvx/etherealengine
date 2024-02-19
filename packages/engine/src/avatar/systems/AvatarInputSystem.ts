@@ -23,7 +23,7 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import { Quaternion, Vector3 } from 'three'
+import { Quaternion, Vector2, Vector3 } from 'three'
 
 import { isDev } from '@etherealengine/common/src/config'
 import { getMutableState, getState } from '@etherealengine/hyperflux'
@@ -33,6 +33,7 @@ import {
   getComponent,
   getMutableComponent,
   getOptionalComponent,
+  hasComponent,
   removeComponent,
   setComponent
 } from '@etherealengine/ecs/src/ComponentFunctions'
@@ -41,19 +42,17 @@ import { Engine } from '@etherealengine/ecs/src/Engine'
 import { Entity } from '@etherealengine/ecs/src/Entity'
 import { defineQuery } from '@etherealengine/ecs/src/QueryFunctions'
 import { defineSystem } from '@etherealengine/ecs/src/SystemFunctions'
-import { CameraComponent } from '@etherealengine/spatial/src/camera/components/CameraComponent'
-import { FollowCameraComponent } from '@etherealengine/spatial/src/camera/components/FollowCameraComponent'
 import { V_000, V_010 } from '@etherealengine/spatial/src/common/constants/MathConstants'
 import { InputComponent } from '@etherealengine/spatial/src/input/components/InputComponent'
+import { InputPointerComponent } from '@etherealengine/spatial/src/input/components/InputPointerComponent'
 import { InputSourceComponent } from '@etherealengine/spatial/src/input/components/InputSourceComponent'
 import { StandardGamepadButton } from '@etherealengine/spatial/src/input/state/ButtonState'
 import { InputState } from '@etherealengine/spatial/src/input/state/InputState'
 import { ClientInputSystem } from '@etherealengine/spatial/src/input/systems/ClientInputSystem'
-import { Physics, RaycastArgs } from '@etherealengine/spatial/src/physics/classes/Physics'
+import { RaycastArgs } from '@etherealengine/spatial/src/physics/classes/Physics'
 import { RigidBodyFixedTagComponent } from '@etherealengine/spatial/src/physics/components/RigidBodyComponent'
 import { CollisionGroups } from '@etherealengine/spatial/src/physics/enums/CollisionGroups'
 import { getInteractionGroups } from '@etherealengine/spatial/src/physics/functions/getInteractionGroups'
-import { PhysicsState } from '@etherealengine/spatial/src/physics/state/PhysicsState'
 import { SceneQueryType } from '@etherealengine/spatial/src/physics/types/PhysicsTypes'
 import { RendererState } from '@etherealengine/spatial/src/renderer/RendererState'
 import { XRControlsState, XRState } from '@etherealengine/spatial/src/xr/XRState'
@@ -141,23 +140,23 @@ const onKeyP = () => {
   getMutableState(RendererState).physicsDebug.set(!getMutableState(RendererState).physicsDebug.value)
 }
 
-const isAvatarClicked = () => {
-  const pointerState = getState(InputState).pointerState
-  const hits = Physics.castRayFromCamera(
-    getComponent(Engine.instance.cameraEntity, CameraComponent),
-    pointerState.position,
-    getState(PhysicsState).physicsWorld,
-    raycastComponentData
-  )
-  if (hits.length) {
-    const hit = hits[0]
-    const hitEntity = (hit.body?.userData as any)?.entity as Entity
-    if (typeof hitEntity !== 'undefined' && hitEntity == Engine.instance.localClientEntity) {
-      return true
-    }
-  }
-  return false
-}
+// const isAvatarClicked = () => {
+//   const pointerState = getState(InputState).pointerState
+//   const hits = Physics.castRayFromCamera(
+//     getComponent(Engine.instance.cameraEntity, CameraComponent),
+//     pointerState.position,
+//     getState(PhysicsState).physicsWorld,
+//     raycastComponentData
+//   )
+//   if (hits.length) {
+//     const hit = hits[0]
+//     const hitEntity = (hit.body?.userData as any)?.entity as Entity
+//     if (typeof hitEntity !== 'undefined' && hitEntity == Engine.instance.localClientEntity) {
+//       return true
+//     }
+//   }
+//   return false
+// }
 
 let clickCount = 0
 const clickTimeout = 0.6
@@ -165,31 +164,33 @@ let douubleClickTimer = 0
 const secondClickTimeout = 0.2
 let secondClickTimer = 0
 
+// TODO: this should be done using the input system components,
+// which already performs raycasts and has the necessary data
 const getAvatarDoubleClick = (buttons): boolean => {
-  const followComponent = getOptionalComponent(Engine.instance.cameraEntity, FollowCameraComponent)
-  if (followComponent && followComponent.zoomLevel < 1) return false
+  // const followComponent = getOptionalComponent(Engine.instance.cameraEntity, FollowCameraComponent)
+  // if (followComponent && followComponent.zoomLevel < 1) return false
 
-  if (buttons.PrimaryClick?.up) {
-    if (!isAvatarClicked()) {
-      clickCount = 0
-      secondClickTimer = 0
-      douubleClickTimer = 0
-      return false
-    }
-    clickCount += 1
-  }
-  if (clickCount < 1) return false
-  if (clickCount > 1) {
-    secondClickTimer += getState(ECSState).deltaSeconds
-    if (secondClickTimer <= secondClickTimeout) return true
-    secondClickTimer = 0
-    clickCount = 0
-    return false
-  }
-  douubleClickTimer += getState(ECSState).deltaSeconds
-  if (douubleClickTimer <= clickTimeout) return false
-  douubleClickTimer = 0
-  clickCount = 0
+  // if (buttons.PrimaryClick?.up) {
+  // if (!isAvatarClicked()) {
+  //   clickCount = 0
+  //   secondClickTimer = 0
+  //   douubleClickTimer = 0
+  //   return false
+  // }
+  // clickCount += 1
+  // }
+  // if (clickCount < 1) return false
+  // if (clickCount > 1) {
+  //   secondClickTimer += getState(ECSState).deltaSeconds
+  //   if (secondClickTimer <= secondClickTimeout) return true
+  //   secondClickTimer = 0
+  //   clickCount = 0
+  //   return false
+  // }
+  // douubleClickTimer += getState(ECSState).deltaSeconds
+  // if (douubleClickTimer <= clickTimeout) return false
+  // douubleClickTimer = 0
+  // clickCount = 0
   return false
 }
 
@@ -198,6 +199,8 @@ const inputSourceQuery = defineQuery([InputSourceComponent])
 const walkableQuery = defineQuery([RigidBodyFixedTagComponent, InputComponent])
 
 let mouseMovedDuringPrimaryClick = false
+const lastMousePosition = new Vector2()
+const mouseMovement = new Vector2()
 
 const execute = () => {
   const { localClientEntity } = Engine.instance
@@ -225,11 +228,15 @@ const execute = () => {
       const inputComponent = getComponent(firstWalkableEntityWithInput, InputComponent)
       const inputSourceEntity = inputComponent?.inputSources[0]
 
-      if (inputSourceEntity) {
-        const inputSourceComponent = getOptionalComponent(inputSourceEntity, InputSourceComponent)
+      if (inputSourceEntity && hasComponent(inputSourceEntity, InputPointerComponent)) {
+        const pointerComponent = getComponent(inputSourceEntity, InputPointerComponent)
+        const inputSourceComponent = getComponent(inputSourceEntity, InputSourceComponent)
+
+        mouseMovement.subVectors(pointerComponent.position, lastMousePosition)
+        lastMousePosition.copy(pointerComponent.position)
+
         if (inputSourceComponent?.buttons.PrimaryClick?.touched) {
-          const pointerState = inputState.pointerState
-          const mouseMoved = pointerState.movement.lengthSq() > 0
+          const mouseMoved = mouseMovement.lengthSq() > 0
           if (mouseMoved) mouseMovedDuringPrimaryClick = true
 
           if (inputSourceComponent.buttons.PrimaryClick.up) {
