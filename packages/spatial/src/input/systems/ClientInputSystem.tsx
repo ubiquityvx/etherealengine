@@ -149,6 +149,8 @@ const execute = () => {
   for (const eid of pointers()) {
     const pointer = getComponent(eid, InputPointerComponent)
     const inputSource = getComponent(eid, InputSourceComponent)
+    pointer.movement.copy(pointer.position).sub(pointer.lastPosition)
+    pointer.lastPosition.copy(pointer.position)
     inputSource.raycaster.setFromCamera(pointer.position, camera)
     TransformComponent.position.x[eid] = raycaster.ray.origin.x
     TransformComponent.position.y[eid] = raycaster.ray.origin.y
@@ -263,7 +265,6 @@ const execute = () => {
 }
 
 const useNonSpatialInputSources = () => {
-  const xrState = useHookstate(getMutableState(XRState))
   useEffect(() => {
     const eid = createEntity()
     setComponent(eid, InputSourceComponent, {})
@@ -324,7 +325,7 @@ const useNonSpatialInputSources = () => {
       canvas.removeEventListener('wheel', onWheelEvent)
       removeEntity(eid)
     }
-  }, [xrState.session])
+  }, [])
 }
 
 const useGamepadInputSources = () => {
@@ -350,10 +351,10 @@ const useGamepadInputSources = () => {
   }, [])
 }
 
-const usePointerInputSources = () => {
+const usePointerInputSources = (canvas = EngineRenderer.instance.renderer.domElement) => {
   const xrState = useHookstate(getMutableState(XRState))
   useEffect(() => {
-    if (xrState.session) return // pointer input sources are automatically handled by webxr
+    if (xrState.session.value) return // pointer input sources are automatically handled by webxr
 
     // TODO: follow this spec more closely https://immersive-web.github.io/webxr/#transient-input
     // const pointerEntities = new Map<number, Entity>()
@@ -361,7 +362,7 @@ const usePointerInputSources = () => {
     const emulatedInputSourceEntity = createEntity()
     setComponent(emulatedInputSourceEntity, InputSourceComponent, {})
     setComponent(emulatedInputSourceEntity, NameComponent, 'InputSource-emulated-pointer')
-    setComponent(emulatedInputSourceEntity, InputPointerComponent, { pointerId: 0 })
+    setComponent(emulatedInputSourceEntity, InputPointerComponent, { pointerId: 0, canvas })
     const inputSourceComponent = getComponent(emulatedInputSourceEntity, InputSourceComponent)
     const pointerComponent = getComponent(emulatedInputSourceEntity, InputPointerComponent)
 
@@ -375,7 +376,6 @@ const usePointerInputSources = () => {
       }
     }
 
-    const canvas = EngineRenderer.instance.renderer.domElement
     canvas.addEventListener('blur', clearPointerState)
     canvas.addEventListener('mouseleave', clearPointerState)
     const handleVisibilityChange = (event: Event) => {
@@ -441,6 +441,7 @@ const useXRInputSources = () => {
 
   useEffect(() => {
     const session = xrState.session.value
+    if (!session) return
 
     const addInputSource = (source: XRInputSource) => {
       const eid = createEntity()
@@ -458,7 +459,7 @@ const useXRInputSources = () => {
       if (entity) removeEntity(entity)
     }
 
-    if (session?.inputSources) {
+    if (session.inputSources) {
       for (const inputSource of session.inputSources) addInputSource(inputSource)
     }
 
@@ -466,8 +467,6 @@ const useXRInputSources = () => {
       event.added.map(addInputSource)
       event.removed.map(removeInputSource)
     }
-
-    session?.addEventListener('inputsourceschange', onInputSourcesChanged)
 
     const onXRSelectStart = (event: XRInputSourceEvent) => {
       const inputSourceComponent = InputSourceComponent.entitiesByInputSource.get(event.inputSource)
@@ -482,13 +481,15 @@ const useXRInputSources = () => {
       if (!state.PrimaryClick) return
       state.PrimaryClick.up = true
     }
-    session?.addEventListener('selectstart', onXRSelectStart)
-    session?.addEventListener('selectend', onXRSelectEnd)
+
+    session.addEventListener('inputsourceschange', onInputSourcesChanged)
+    session.addEventListener('selectstart', onXRSelectStart)
+    session.addEventListener('selectend', onXRSelectEnd)
 
     return () => {
-      session?.removeEventListener('inputsourceschange', onInputSourcesChanged)
-      session?.removeEventListener('selectstart', onXRSelectStart)
-      session?.removeEventListener('selectend', onXRSelectEnd)
+      session.removeEventListener('inputsourceschange', onInputSourcesChanged)
+      session.removeEventListener('selectstart', onXRSelectStart)
+      session.removeEventListener('selectend', onXRSelectEnd)
     }
   }, [xrState.session])
 }

@@ -131,13 +131,15 @@ const execute = () => {
   }
 
   const inputSource = getOptionalComponent(inputPointerEntity, InputSourceComponent)
-  const inputPointer = getComponent(inputPointerEntity, InputPointerComponent)
+  const inputPointer = getOptionalComponent(inputPointerEntity, InputPointerComponent)
 
   const keys = inputSource?.buttons
 
   if (keys?.KeyV?.down) onKeyV()
   if (keys?.KeyF?.down) onKeyF()
   if (keys?.KeyC?.down) onKeyC()
+
+  if (!inputPointer) return
 
   const inputState = getState(InputState)
   pointerMovement.subVectors(inputPointer.position, lastPointerPosition)

@@ -23,7 +23,7 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import { Quaternion, Vector2, Vector3 } from 'three'
+import { Quaternion, Vector3 } from 'three'
 
 import { isDev } from '@etherealengine/common/src/config'
 import { getMutableState, getState } from '@etherealengine/hyperflux'
@@ -199,8 +199,6 @@ const inputSourceQuery = defineQuery([InputSourceComponent])
 const walkableQuery = defineQuery([RigidBodyFixedTagComponent, InputComponent])
 
 let mouseMovedDuringPrimaryClick = false
-const lastMousePosition = new Vector2()
-const mouseMovement = new Vector2()
 
 const execute = () => {
   const { localClientEntity } = Engine.instance
@@ -232,11 +230,8 @@ const execute = () => {
         const pointerComponent = getComponent(inputSourceEntity, InputPointerComponent)
         const inputSourceComponent = getComponent(inputSourceEntity, InputSourceComponent)
 
-        mouseMovement.subVectors(pointerComponent.position, lastMousePosition)
-        lastMousePosition.copy(pointerComponent.position)
-
         if (inputSourceComponent?.buttons.PrimaryClick?.touched) {
-          const mouseMoved = mouseMovement.lengthSq() > 0
+          const mouseMoved = pointerComponent.movement.lengthSq() > 0
           if (mouseMoved) mouseMovedDuringPrimaryClick = true
 
           if (inputSourceComponent.buttons.PrimaryClick.up) {
