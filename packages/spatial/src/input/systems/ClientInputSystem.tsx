@@ -469,13 +469,17 @@ const useXRInputSources = () => {
     }
 
     const onXRSelectStart = (event: XRInputSourceEvent) => {
-      const inputSourceComponent = InputSourceComponent.entitiesByInputSource.get(event.inputSource)
+      const eid = InputSourceComponent.entitiesByInputSource.get(event.inputSource)
+      if (!eid) return
+      const inputSourceComponent = getComponent(eid, InputSourceComponent)
       if (!inputSourceComponent) return
       const state = inputSourceComponent.buttons as ButtonStateMap
       state.PrimaryClick = createInitialButtonState()
     }
     const onXRSelectEnd = (event: XRInputSourceEvent) => {
-      const inputSourceComponent = InputSourceComponent.entitiesByInputSource.get(event.inputSource)
+      const eid = InputSourceComponent.entitiesByInputSource.get(event.inputSource)
+      if (!eid) return
+      const inputSourceComponent = getComponent(eid, InputSourceComponent)
       if (!inputSourceComponent) return
       const state = inputSourceComponent.buttons as ButtonStateMap
       if (!state.PrimaryClick) return

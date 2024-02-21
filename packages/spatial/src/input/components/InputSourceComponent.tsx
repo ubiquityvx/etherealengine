@@ -30,6 +30,7 @@ import { defineState, getMutableState, none, useHookstate } from '@etherealengin
 
 import {
   defineComponent,
+  getComponent,
   getOptionalComponent,
   hasComponent,
   removeComponent,
@@ -123,7 +124,16 @@ export const InputSourceComponent = defineComponent({
     setComponent(entity, TransformComponent)
   },
 
-  entitiesByInputSource: new WeakMap<XRInputSource>(),
+  getMergedButtons(inputSourceEntities: Entity[]) {
+    return Object.assign(
+      {} as ButtonStateMap,
+      ...inputSourceEntities.map((eid) => {
+        return getComponent(eid, InputSourceComponent).buttons
+      })
+    ) as ButtonStateMap
+  },
+
+  entitiesByInputSource: new WeakMap<XRInputSource, Entity>(),
 
   captureButtons: (targetEntity: Entity, handedness = handednesses) => {
     const state = getMutableState(InputSourceCaptureState)

@@ -251,51 +251,48 @@ const execute = () => {
       if (controller.cameraEntity === inputSource.assignedButtonEntity) return true
     })
   }
-  for (const inputSourceEntity of inputEntities) {
-    const inputSource = getComponent(inputSourceEntity, InputSourceComponent)
 
-    const buttons = inputSource.buttons
+  const buttons = InputSourceComponent.getMergedButtons(inputEntities)
 
-    const standardGamepad =
-      inputSource.source.gamepad?.mapping === 'standard' || inputSource.source.gamepad?.mapping === ''
+  if (buttons.ShiftLeft?.down) onShiftLeft()
 
-    if (buttons.ShiftLeft?.down) onShiftLeft()
+  const gamepadJump = buttons[StandardGamepadButton.ButtonA]?.down
 
-    const gamepadJump = standardGamepad && buttons[StandardGamepadButton.ButtonA]?.down
+  if (isDev) {
+    if (buttons.KeyP?.down) onKeyP()
+  }
 
-    if (isDev) {
-      if (buttons.KeyP?.down) onKeyP()
-    }
+  if (!isMovementControlsEnabled) return
 
-    if (!isMovementControlsEnabled) continue
+  //** touch input (only for avatar jump)*/
+  const doubleClicked = isCameraAttachedToAvatar ? false : getAvatarDoubleClick(buttons)
+  /** keyboard input */
+  const keyDeltaX =
+    (buttons.KeyA?.pressed ? -1 : 0) +
+    (buttons.KeyD?.pressed ? 1 : 0) +
+    (buttons[StandardGamepadButton.DPadLeft]?.pressed ? -1 : 0) +
+    (buttons[StandardGamepadButton.DPadRight]?.pressed ? 1 : 0)
+  const keyDeltaZ =
+    (buttons.KeyW?.pressed ? -1 : 0) +
+    (buttons.KeyS?.pressed ? 1 : 0) +
+    (buttons.ArrowUp?.pressed ? -1 : 0) +
+    (buttons.ArrowDown?.pressed ? 1 : 0) +
+    (buttons[StandardGamepadButton.DPadUp]?.pressed ? -1 : 0) +
+    (buttons[StandardGamepadButton.DPadDown]?.pressed ? -1 : 0)
 
-    //** touch input (only for avatar jump)*/
-    const doubleClicked = isCameraAttachedToAvatar ? false : getAvatarDoubleClick(buttons)
-    /** keyboard input */
-    const keyDeltaX =
-      (buttons.KeyA?.pressed ? -1 : 0) +
-      (buttons.KeyD?.pressed ? 1 : 0) +
-      (buttons[StandardGamepadButton.DPadLeft]?.pressed ? -1 : 0) +
-      (buttons[StandardGamepadButton.DPadRight]?.pressed ? 1 : 0)
-    const keyDeltaZ =
-      (buttons.KeyW?.pressed ? -1 : 0) +
-      (buttons.KeyS?.pressed ? 1 : 0) +
-      (buttons.ArrowUp?.pressed ? -1 : 0) +
-      (buttons.ArrowDown?.pressed ? 1 : 0) +
-      (buttons[StandardGamepadButton.DPadUp]?.pressed ? -1 : 0) +
-      (buttons[StandardGamepadButton.DPadDown]?.pressed ? -1 : 0)
+  controller.gamepadLocalInput.set(keyDeltaX, 0, keyDeltaZ).normalize()
 
-    controller.gamepadLocalInput.set(keyDeltaX, 0, keyDeltaZ).normalize()
+  controller.gamepadJumpActive = !!buttons.Space?.pressed || gamepadJump || doubleClicked
 
-    controller.gamepadJumpActive = !!buttons.Space?.pressed || gamepadJump || doubleClicked
-
+  // TODO: refactor AvatarControlSchemes to allow multiple input sources to be passed
+  for (const eid of inputEntities) {
+    const inputSource = getComponent(eid, InputSourceComponent)
     const controlScheme =
       inputSource.source.handedness === 'none' || !isCameraAttachedToAvatar
         ? AvatarAxesControlScheme.Move
         : inputSource.source.handedness === inputState.preferredHand
         ? avatarInputSettings.rightAxesControlScheme
         : avatarInputSettings.leftAxesControlScheme
-
     AvatarAxesControlSchemeBehavior[controlScheme](
       inputSource.source,
       controller,

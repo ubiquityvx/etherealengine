@@ -26,7 +26,7 @@ Ethereal Engine. All Rights Reserved.
 import ECS, { Entity } from '@etherealengine/ecs'
 import { getState } from '@etherealengine/hyperflux'
 import { InputSourceComponent } from '@etherealengine/spatial/src/input/components/InputSourceComponent'
-import { XRJointAvatarBoneMap, XRJointParentMap } from '@etherealengine/spatial/src/xr/XRComponents'
+import { VRMHandsToXRJointMap, XRJointParentMap } from '@etherealengine/spatial/src/xr/XRComponents'
 import { XRState } from '@etherealengine/spatial/src/xr/XRState'
 import { VRM, VRMHumanBoneName } from '@pixiv/three-vrm'
 import { Quaternion } from 'three'
@@ -38,7 +38,7 @@ import { Quaternion } from 'three'
  */
 const vrmUnprefixedHandJointNames = [
   'ThumbMetacarpal',
-  'ThumbProxal',
+  'ThumbProximal',
   'ThumbDistal',
   'IndexMetacarpal',
   'IndexProximal',
@@ -72,8 +72,8 @@ export const applyXRHandPoses = (vrm: VRM, inputSourceEid: Entity) => {
   const xrFrame = getState(XRState).xrFrame
   for (const name of vrmJointNames) {
     const bone = vrm.humanoid.getNormalizedBone(name)
-    const xrJointName = XRJointAvatarBoneMap[name]
-    const xrParentJointName = XRJointParentMap[name]
+    const xrJointName = VRMHandsToXRJointMap[name]!
+    const xrParentJointName = XRJointParentMap[xrJointName]
     const xrJoint = inputSource.source.hand!.get(xrJointName)
     const xrParentJoint = inputSource.source.hand!.get(xrParentJointName)
     if (!bone || !xrJoint || !xrParentJoint) continue

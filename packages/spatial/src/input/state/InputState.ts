@@ -33,7 +33,6 @@ export const InputState = defineState({
   name: 'InputState',
   initial: () => ({
     preferredHand: 'right' as 'left' | 'right',
-    inputSources: [] as XRInputSourceArray,
     /** A screenspace raycaster for the pointer */
     pointerScreenRaycaster: new Raycaster(),
     scroll: new Vector2()
