@@ -23,7 +23,11 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import { fileTypeCanHaveThumbnail } from '@etherealengine/client-core/src/common/functions/thumbnails'
+import {
+  fileThumbnailCache,
+  fileTypeCanHaveThumbnail
+} from '@etherealengine/client-core/src/common/functions/thumbnails'
+import config from '@etherealengine/common/src/config'
 import { StaticResourceType, staticResourcePath } from '@etherealengine/common/src/schema.type.module'
 import { Engine } from '@etherealengine/ecs'
 import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew'
@@ -71,7 +75,6 @@ const FileIconType = {
 async function retrieveStaticResource(file: FileDataType): Promise<StaticResourceType | null> {
   const { key } = file
   const resources = await Engine.instance.api.service(staticResourcePath).find({
-    // query: { key: { $like: `%${key}%` } }
     query: { key }
   })
   if (resources.data.length === 0) {
@@ -82,18 +85,15 @@ async function retrieveStaticResource(file: FileDataType): Promise<StaticResourc
 
 export const FileIcon = ({ file, showRibbon }: { file: FileDataType; showRibbon?: boolean }) => {
   const fallback = { icon: FileIconType[file.type] }
-  const [thumbnailURL, setThumbnailURL] = useState<string | null>(null)
-
-  if (!file.name.includes('thumbnail') && fileTypeCanHaveThumbnail(file.type)) {
-    // TODO: cache thumbnail keys by file key so we can skip the static resource load
+  const [thumbnailURL, setThumbnailURL] = useState<string | null>(fileThumbnailCache.get(file.key) ?? null)
+  if (thumbnailURL == null && fileTypeCanHaveThumbnail(file.type)) {
     retrieveStaticResource(file).then((resource) => {
       if (resource?.thumbnailKey == null) {
         setThumbnailURL(null)
         return
       }
-      const url = resource?.url.replace(/\/assets\/.*/, `/thumbnails/${resource?.thumbnailKey}`)
-      console.log('Showing icon', resource?.thumbnailKey, url)
-      setThumbnailURL(url)
+
+      setThumbnailURL(`${config.client.fileServer}/projects/${resource?.project}/thumbnails/${resource?.thumbnailKey}`)
     })
   }
 

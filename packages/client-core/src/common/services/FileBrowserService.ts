@@ -34,7 +34,7 @@ import {
 } from '@etherealengine/common/src/schema.type.module'
 import { Engine } from '@etherealengine/ecs/src/Engine'
 import { saveResourceThumbnail } from '../functions/saveResourceThumbnail'
-import { fileTypeCanHaveThumbnail } from '../functions/thumbnails'
+import { fileThumbnailCache, fileTypeCanHaveThumbnail } from '../functions/thumbnails'
 import { NotificationService } from './NotificationService'
 
 export const FILES_PAGE_LIMIT = 100
@@ -72,27 +72,33 @@ export const FileBrowserService = {
       })) as Paginated<FileBrowserContentType>
 
       Promise.all(
-        files.data.map(async (file) => {
-          if (!fileTypeCanHaveThumbnail(file.type)) {
-            return
-          }
-          const { key } = file
-          // TODO: cache thumbnail keys by file key to avoid hitting this API excessively
-          const resources = await Engine.instance.api.service(staticResourcePath).find({
-            query: { key }
+        files.data
+          .filter((file) => fileTypeCanHaveThumbnail(file.type))
+          .map(async (file) => {
+            const { key } = file
+
+            if (fileThumbnailCache.has(key)) {
+              return
+            }
+
+            const resources = await Engine.instance.api.service(staticResourcePath).find({
+              query: { key }
+            })
+
+            if (resources.data.length === 0) {
+              return
+            }
+            const resource = resources.data[0]
+            if (resource.thumbnailKey != null) {
+              return
+            }
+            const thumbnailKey = await saveResourceThumbnail(resource)
+            if (thumbnailKey != null) {
+              fileThumbnailCache.set(key, thumbnailKey)
+            }
+
+            // TODO: cache pending thumbnail promises by static resource key
           })
-
-          if (resources.data.length === 0) {
-            return
-          }
-          const resource = resources.data[0]
-          if (resource.thumbnailKey != null) {
-            return
-          }
-          await saveResourceThumbnail(resource)
-
-          // TODO: cache pending thumbnail promises by static resource key
-        })
       )
 
       fileBrowserState.merge({

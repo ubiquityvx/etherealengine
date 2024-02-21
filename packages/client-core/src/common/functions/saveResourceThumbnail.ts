@@ -47,14 +47,14 @@ export const uploadProjectThumbnails = (projectName: string, files: File[]) => {
   } as CancelableUploadPromiseArrayReturnType<string>
 }
 
-export async function saveResourceThumbnail(resource: StaticResourceType) {
+export async function saveResourceThumbnail(resource: StaticResourceType): Promise<string | null> {
   if (resource.id == null) {
-    return
+    return null
   }
 
   const thumbnail = await createThumbnailForResource(resource)
   if (thumbnail == null) {
-    return
+    return null
   }
   const thumbnailType = 'automatic'
 
@@ -75,4 +75,5 @@ export async function saveResourceThumbnail(resource: StaticResourceType) {
   // TODO: make these two calls into one async upload asset hooks call
   await Engine.instance.api.service(staticResourcePath).patch(resource.id, { thumbnailKey, thumbnailType })
   await Promise.allSettled(uploadProjectThumbnails(resource.project, [new File([thumbnail], thumbnailKey)]).promises)
+  return thumbnailKey
 }

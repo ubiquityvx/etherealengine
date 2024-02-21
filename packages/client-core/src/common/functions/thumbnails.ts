@@ -173,3 +173,5 @@ export const createThumbnailForResource = async (resource: StaticResourceType): 
   const blob = await (await fetch(resource.url)).blob()
   return (await generator(blob)) ?? null
 }
+
+export const fileThumbnailCache: Map<string, string> = new Map()
