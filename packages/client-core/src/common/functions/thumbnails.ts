@@ -127,14 +127,14 @@ export function getCanvasBlob(canvas: HTMLCanvasElement, fileType = 'image/jpeg'
 const generatorTypes = [
   {
     types: ['image/jpeg', 'image/jpg', 'image/png', 'jpeg', 'jpg', 'png'], // TODO: , ktx2
-    gen: async (blob) => {
-      return await generateImageFileThumbnail(blob, 256, 256, 'transparent')
+    gen: async (blob, width) => {
+      return await generateImageFileThumbnail(blob, width, width, 'transparent')
     }
   },
   {
     types: ['application/vnd.apple.mpegurl', 'm3u8', 'mp4', 'video/mp4'],
-    gen: async (blob) => {
-      return await generateVideoFileThumbnail(blob, 256, 256, 'transparent')
+    gen: async (blob, width) => {
+      return await generateVideoFileThumbnail(blob, width, width, 'transparent')
     }
   },
   {
@@ -171,7 +171,7 @@ export const createThumbnailForResource = async (resource: StaticResourceType): 
     return null
   }
   const blob = await (await fetch(resource.url)).blob()
-  return (await generator(blob)) ?? null
+  return (await generator(blob, 90)) ?? null
 }
 
 export const fileThumbnailCache: Map<string, string> = new Map()
