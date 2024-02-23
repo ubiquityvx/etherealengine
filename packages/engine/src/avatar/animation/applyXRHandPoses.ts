@@ -26,10 +26,14 @@ Ethereal Engine. All Rights Reserved.
 import ECS, { Entity } from '@etherealengine/ecs'
 import { getState } from '@etherealengine/hyperflux'
 import { InputSourceComponent } from '@etherealengine/spatial/src/input/components/InputSourceComponent'
-import { VRMHandsToXRJointMap, XRJointParentMap } from '@etherealengine/spatial/src/xr/XRComponents'
-import { XRState } from '@etherealengine/spatial/src/xr/XRState'
+import {
+  VRMHandsToXRJointMap,
+  XRHandJointToIndexMap,
+  XRJointParentMap
+} from '@etherealengine/spatial/src/xr/XRComponents'
+import { ReferenceSpace, XRState } from '@etherealengine/spatial/src/xr/XRState'
 import { VRM, VRMHumanBoneName } from '@pixiv/three-vrm'
-import { Quaternion } from 'three'
+import { Matrix4 } from 'three'
 
 /**
  * Hand joint names (VRMBoneName) without the handedness prefix.
@@ -61,15 +65,27 @@ const vrmUnprefixedHandJointNames = [
 const vrmLeftHandJointNames = vrmUnprefixedHandJointNames.map((bone) => `left${bone}` as VRMHumanBoneName)
 const vrmRightHandJointNames = vrmUnprefixedHandJointNames.map((bone) => `right${bone}` as VRMHumanBoneName)
 
-const restHandSpaceRotationInv = new Quaternion()
+const jointPoses = new Float32Array(16 * 25)
+const invMatrices = new Array(25).fill(0).map(() => new Matrix4())
+const matrices = new Array(25).fill(0).map(() => new Matrix4())
+const localMatrix = new Matrix4()
 
 export const applyXRHandPoses = (vrm: VRM, inputSourceEid: Entity) => {
   const inputSource = ECS.getComponent(inputSourceEid, InputSourceComponent)
   if (!inputSource.source.hand) return
   const handedness = inputSource.source?.handedness
   const vrmJointNames = handedness === 'left' ? vrmLeftHandJointNames : vrmRightHandJointNames
-
   const xrFrame = getState(XRState).xrFrame
+  xrFrame?.fillPoses?.(inputSource.source.hand.values(), ReferenceSpace.localFloor!, jointPoses)
+
+  matrices.forEach((matrix, i) => {
+    matrix.fromArray(jointPoses, i * 16)
+  })
+
+  invMatrices.forEach((invMatrix, i) => {
+    invMatrix.copy(matrices[i]).invert()
+  })
+
   for (const name of vrmJointNames) {
     const bone = vrm.humanoid.getNormalizedBone(name)
     const xrJointName = VRMHandsToXRJointMap[name]!
@@ -77,9 +93,11 @@ export const applyXRHandPoses = (vrm: VRM, inputSourceEid: Entity) => {
     const xrJoint = inputSource.source.hand!.get(xrJointName)
     const xrParentJoint = inputSource.source.hand!.get(xrParentJointName)
     if (!bone || !xrJoint || !xrParentJoint) continue
-    const pose = xrFrame?.getJointPose?.(xrJoint, xrParentJoint)
-    if (!pose) continue
-    const rotation = pose.transform.orientation
-    bone.node.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w)
+    const index = XRHandJointToIndexMap[xrJointName]
+    const matrix = matrices[index]
+    const parentInvMatrix = invMatrices[XRHandJointToIndexMap[xrParentJointName]]
+    localMatrix.copy(matrix).premultiply(parentInvMatrix)
+    bone.node.position.setFromMatrixPosition(localMatrix)
+    bone.node.quaternion.setFromRotationMatrix(localMatrix)
   }
 }

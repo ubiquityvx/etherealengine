@@ -165,6 +165,14 @@ export const XRJointBones = [
   'pinky-finger-tip'
 ] as XRHandJoint[]
 
+export const XRHandJointToIndexMap = XRJointBones.reduce(
+  (map, joint, index) => {
+    map[joint] = index
+    return map
+  },
+  {} as Record<XRHandJoint, number>
+)
+
 export const XRHandComponent = defineComponent({
   name: 'XRHandComponent'
 })
