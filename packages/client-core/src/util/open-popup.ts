@@ -23,6 +23,8 @@ export default ({url, title, w, h}) => {
       `
         )
 
+        console.log('newWindow', newWindow)
+
         function checkWindow() {
             if (newWindow.closed) {
                 clearInterval(interval)
@@ -30,7 +32,7 @@ export default ({url, title, w, h}) => {
             }
         }
 
-        if (window.focus) newWindow.focus();
+        if (window.focus && newWindow) newWindow.focus();
 
         const interval = setInterval(checkWindow, 500)
     })

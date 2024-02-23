@@ -317,7 +317,7 @@ export default defineConfig(async () => {
               : 'service-worker.js'
             : '',
         paymentPointer: coilSetting?.paymentPointer || '',
-        hostLocalStorageAccessor: `${clientSetting.url}/local-storage-accessor.html`,
+        rootCookieAccessor: `${clientSetting.url}/root-cookie-accessor.html`,
         rootHostname: 'localhost'
       }),
       viteCompression({

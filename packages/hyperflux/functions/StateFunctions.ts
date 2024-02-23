@@ -27,7 +27,6 @@ import { createState, SetInitialStateAction, State, useHookstate } from '@hookst
 import type { Object as _Object, Function, String } from 'ts-toolbelt'
 
 import { DeepReadonly } from '@etherealengine/common/src/DeepReadonly'
-import multiLogger from '@etherealengine/common/src/logger'
 import { isClient } from '@etherealengine/common/src/utils/getEnvironment'
 import { resolveObject } from '@etherealengine/common/src/utils/resolveObject'
 
@@ -130,30 +129,14 @@ export const syncStateWithLocalStorage = (
     id: Symbol('syncStateWithLocalStorage'),
     init: () => ({
       onSet(arg) {
-        console.log('onSet arg', arg)
         for (const key of keys) {
           if (state[key].value === undefined)
             localStorage.removeItem(`${stateNamespaceKey}.${stateDefinition.name}.${key}`)
-          else {
+          else
             localStorage.setItem(
               `${stateNamespaceKey}.${stateDefinition.name}.${key}`,
               JSON.stringify(state[key].get({ noproxy: true }))
             )
-            if (arg.merged?.authUser) {
-              const iframe = document.getElementById('local-storage-accessor') as HTMLFrameElement
-              let win;
-              try {
-                win = iframe!.contentWindow;
-              } catch (e) {
-                win = iframe!.contentWindow;
-              }
-
-              console.log('win', win)
-
-              console.log('writing data to iframe', `${stateNamespaceKey}.${stateDefinition.name}.${key}`, state[key].get(NO_PROXY))
-              win.postMessage(JSON.stringify({key: `${stateNamespaceKey}.${stateDefinition.name}.${key}`, method: "set", data: state[key].get(NO_PROXY)}), "https://local.etherealengine.org");
-            }
-          }
         }
       }
     })

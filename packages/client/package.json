@@ -13,8 +13,8 @@
   "npmClient": "npm",
   "scripts": {
     "check-errors": "tsc --noemit",
-    "dev": "npm run update-localstorage-accessor-domain && cross-env APP_ENV=development NODE_OPTIONS=--max_old_space_size=20480 vite",
-    "build": "npm run update-localstorage-accessor-domain && cross-env NODE_OPTIONS=--max_old_space_size=10240 vite build",
+    "dev": "npm run update-root-cookie-accessor-domain && cross-env APP_ENV=development NODE_OPTIONS=--max_old_space_size=20480 vite",
+    "build": "npm run update-root-cookie-accessor-domain && cross-env NODE_OPTIONS=--max_old_space_size=10240 vite build",
     "preview": "cross-env NODE_OPTIONS=--max_old_space_size=6144 vite preview",
     "start": "node server.js",
     "validate": "npm run test",
@@ -22,7 +22,7 @@
     "local": "npm run localbuild && npm run localstart",
     "localbuild": "cross-env APP_ENV=production VITE_LOCAL_BUILD=true npm run build && rm -rf ../server/upload/client && cp -r ./dist ../server/upload/client",
     "localstart": "cross-env APP_ENV=production VITE_LOCAL_BUILD=true npm run start",
-    "update-localstorage-accessor-domain": "cross-env node --loader ts-node/esm scripts/update-localstorage-accessor-domain.ts"
+    "update-root-cookie-accessor-domain": "cross-env node --loader ts-node/esm scripts/update-root-cookie-accessor-domain.ts"
   },
   "resolutions": {
     "@types/react": "18.2.0",

@@ -42,15 +42,17 @@ cli.main(async () => {
     })
   }
 
-  const localStorageAccessor = readFileSync(path.join(appRootPath.path, 'packages', 'client', 'public', 'local-storage-accessor-template.html')).toString()
+  const localStorageAccessor = readFileSync(path.join(appRootPath.path, 'packages', 'client', 'public', 'root-cookie-accessor-template.html')).toString()
 
   const localBuildOrDev =
       process.env.APP_ENV === 'development' || globalThis.process.env.VITE_LOCAL_BUILD === 'true'
   const clientUrl = localBuildOrDev && globalThis.process.env.VITE_LOCAL_NGINX !== 'true'
           ? `https://${globalThis.process.env.VITE_APP_HOST}:${globalThis.process.env.VITE_APP_PORT}`
           : `https://${globalThis.process.env.VITE_APP_HOST}`
-  const updated = localStorageAccessor.replace('"<ALLOWED_DOMAINS>"', `["${clientUrl}", "https://cool.pants.com", "https://cool.pants.com", "https://hot.pants.com", "https://warm.pants.com", 'https://cool.pants.com']`)
+  const updated = localStorageAccessor
+      .replace('"<ROOT_DOMAIN>"', `["${clientUrl}"]`)
+      .replace('"<ALLOWED_DOMAIN_LINK>"', `'${clientUrl}/allowed-domains.json'`)
 
-  writeFileSync(path.join(appRootPath.path, 'packages', 'client', 'public', 'local-storage-accessor.html'), Buffer.from(updated))
+  writeFileSync(path.join(appRootPath.path, 'packages', 'client', 'public', 'root-cookie-accessor.html'), Buffer.from(updated))
   process.exit(0)
 })

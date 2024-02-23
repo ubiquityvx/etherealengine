@@ -32,7 +32,13 @@ import config, { validateEmail, validatePhoneNumber } from '@etherealengine/comm
 import { AuthUserSeed, resolveAuthUser } from '@etherealengine/common/src/interfaces/AuthUser'
 import multiLogger from '@etherealengine/common/src/logger'
 import { AuthStrategiesType } from '@etherealengine/common/src/schema.type.module'
-import { defineState, getMutableState, getState, stateNamespaceKey, syncStateWithLocalStorage } from '@etherealengine/hyperflux'
+import {
+  defineState,
+  getMutableState,
+  getState,
+  stateNamespaceKey,
+  syncStateWithLocalStorage
+} from '@etherealengine/hyperflux'
 import openPopup from "../../util/open-popup";
 
 import {
@@ -124,7 +130,8 @@ const resolveWalletUser = (credentials: any): UserType => {
 
 
 const getRootToken = async(): Promise<string> => {
-  const iframe = document.getElementById('local-storage-accessor') as HTMLFrameElement
+  let gotResponse = false
+  const iframe = document.getElementById('root-cookie-accessor') as HTMLFrameElement
   let win;
   try {
     win = iframe!.contentWindow;
@@ -132,39 +139,52 @@ const getRootToken = async(): Promise<string> => {
     win = iframe!.contentWindow;
   }
 
-  console.log('posting checkAccess')
-  win.postMessage(JSON.stringify({ method: 'checkAccess' }), 'https://local.etherealengine.org')
+  console.log('app host', `https://${process.env.VITE_APP_HOST}`)
+  console.log('posting checkAccess', config.client.clientUrl)
+  const clientUrl = config.client.clientUrl
+  win.postMessage(JSON.stringify({ method: 'checkAccess' }), clientUrl)
+  const checkAccessInterval = setInterval(() => {
+    console.log('waited 500 ms, have we gotten a response?', gotResponse)
+    if (!gotResponse) {
+      console.log('did not get response, posting checkAccess again')
+      win.postMessage(JSON.stringify({ method: 'checkAccess' }), clientUrl)
+    } else clearInterval(checkAccessInterval)
+  }, 500)
   const hasAccess = await new Promise(resolve => {
     const hasAccessListener = async function(e) {
-      console.log('got message from iframe for hasAccessListener', e, e.data)
+      gotResponse = true
+      console.log('got message from iframe for hasAccessListener', e, e?.data)
       window.removeEventListener('message', hasAccessListener)
-      // if (e.data === 'false') {
+      if (e.data === 'false') {
         console.log('opening main-site-cookie')
-        await openPopup({ url: 'https://local.etherealengine.org/main-site-cookie-acknowledgment.html', title: '_blank', w: 200, h: 300 })
+        await openPopup({ url: `${clientUrl}/main-site-cookie-acknowledgment.html`, title: '_blank', w: 200, h: 300 })
         resolve(true)
-      // }
-      // else resolve(true)
+      }
+      else resolve(true)
     }
     window.addEventListener('message', hasAccessListener)
+    console.log('added hasAccessListener')
   })
   console.log('retrieving token from root storage')
   if (hasAccess) {
     win.postMessage(JSON.stringify({
       key: `${stateNamespaceKey}.AuthState.authUser`,
       method: "get"
-    }), "https://local.etherealengine.org");
+    }), clientUrl);
     return await new Promise(resolve => {
       const getIframeResponse = function (e) {
-        console.log('got message from iframe for getIframeResponse', e, e.data)
+        console.log('got message from iframe for getIframeResponse', e, e?.data)
         window.removeEventListener('message', getIframeResponse)
-        if (e.origin !== config.client.clientUrl) return
-        try {
-          const value = JSON.parse(e.data)
-          console.log('value', value)
-          resolve(value?.accessToken)
-        } catch {
-          resolve(e.data)
-        }
+        if (e.origin !== clientUrl) return
+        if (e?.data) {
+          try {
+            const value = JSON.parse(e.data)
+            console.log('value', value)
+            resolve(value?.accessToken)
+          } catch {
+            resolve(null)
+          }
+        } else resolve(e)
       }
       window.addEventListener('message', getIframeResponse)
     })
@@ -203,6 +223,23 @@ export interface LinkedInLoginForm {
   email: string
 }
 
+
+export const writeAuthUserToIframe = () => {
+  console.log('AUTHUSER BEING SET')
+  const iframe = document.getElementById('root-cookie-accessor') as HTMLFrameElement
+  let win;
+  try {
+    win = iframe!.contentWindow;
+  } catch (e) {
+    win = iframe!.contentWindow;
+  }
+
+  console.log('win', win)
+
+  console.log('writing data to iframe', `${stateNamespaceKey}.${AuthState.name}.authUser`, getState(AuthState).authUser)
+  win.postMessage(JSON.stringify({key: `${stateNamespaceKey}.${AuthState.name}.authUser`, method: "set", data: getState(AuthState).authUser}), config.client.clientUrl);
+}
+
 /**
  * Resets the current user's accessToken to a new random guest token.
  */
@@ -218,6 +255,7 @@ async function _resetToGuestToken(options = { reset: true }) {
   const accessToken = newProvider.accessToken!
   console.log(`Created new guest accessToken: ${accessToken}`)
   await Engine.instance.api.authentication.setAccessToken(accessToken as string)
+  writeAuthUserToIframe()
   return accessToken
 }
 
@@ -232,14 +270,17 @@ export const AuthService = {
     console.log('authState', authState.get({ noproxy: true }).authUser)
     try {
       const rootDomainToken = await getRootToken()
-      console.log('rootDomainToken', rootDomainToken)
+      console.log('rootDomainToken', rootDomainToken, rootDomainToken.length)
 
       if (forceClientAuthReset) {
+        console.log('forcing auth reset')
         await Engine.instance.api.authentication.reset()
       }
-      if (rootDomainToken) {
+      if (rootDomainToken?.length > 0) {
+        console.log('setting access token from existing')
         await Engine.instance.api.authentication.setAccessToken(rootDomainToken as string)
       } else {
+        console.log('retrieved token was empty, making new guest')
         await _resetToGuestToken({ reset: false })
       }
 
@@ -247,8 +288,10 @@ export const AuthService = {
       try {
         res = await Engine.instance.api.reAuthenticate()
       } catch (err) {
+        console.log('re-authenticate errored', err)
         if (err.className === 'not-found' || (err.className === 'not-authenticated' && err.message === 'jwt expired')) {
           authState.merge({ isLoggedIn: false, user: UserSeed, authUser: AuthUserSeed })
+          console.log('creating guest from re-authenticate error')
           await _resetToGuestToken()
           res = await Engine.instance.api.reAuthenticate()
         } else {
@@ -257,23 +300,29 @@ export const AuthService = {
         }
       }
       if (res) {
+        console.log('re-authenticate succeeded', res)
         const identityProvider = res[identityProviderPath] as IdentityProviderType
+        console.log('identityProvider', identityProvider)
         // Response received form reAuthenticate(), but no `id` set.
         if (!identityProvider?.id) {
+          console.log('identity-provider was missing, creating new guest')
           authState.merge({ isLoggedIn: false, user: UserSeed, authUser: AuthUserSeed })
           await _resetToGuestToken()
           res = await Engine.instance.api.reAuthenticate()
+          console.log('re-authenticate res', res)
         }
         const authUser = resolveAuthUser(res)
         // authUser is now { accessToken, authentication, identityProvider }
         authState.merge({ authUser })
-        await AuthService.loadUserData(authUser.identityProvider?.userId)
+        writeAuthUserToIframe()
+        await AuthService.loadUserData(authUser.identityProvider.userId)
       } else {
         logger.warn('No response received from reAuthenticate()!')
       }
     } catch (err) {
       logger.error(err, 'Error on resolving auth user in doLoginAuto, logging out')
       authState.merge({ isLoggedIn: false, user: UserSeed, authUser: AuthUserSeed })
+      writeAuthUserToIframe()
 
       // if (window.location.pathname !== '/') {
       //   window.location.href = '/';
@@ -443,6 +492,7 @@ export const AuthService = {
   },
 
   async loginUserByJwt(accessToken: string, redirectSuccess: string, redirectError: string) {
+    console.log('loginUserByJwt', accessToken)
     const authState = getMutableState(AuthState)
     authState.merge({ isProcessing: true, error: '' })
     try {
@@ -454,6 +504,7 @@ export const AuthService = {
 
       const authUser = resolveAuthUser(res)
       authState.merge({ authUser })
+      writeAuthUserToIframe()
       await AuthService.loadUserData(authUser.identityProvider?.userId)
       authState.merge({ isProcessing: false, error: '' })
       let timeoutTimer = 0
@@ -501,6 +552,9 @@ export const AuthService = {
       authState.merge({ isLoggedIn: false, user: UserSeed, authUser: AuthUserSeed })
     } finally {
       authState.merge({ isProcessing: false, error: '' })
+      console.log('writing auth user to iframe')
+      writeAuthUserToIframe()
+      console.log('Finished writing auth user to iframe')
       AuthService.doLoginAuto(true)
     }
   },
