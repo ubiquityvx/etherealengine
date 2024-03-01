@@ -99,7 +99,6 @@ const TailwindPage = () => {
       ClientSettingService.fetchClientSettings()
     }
   }, [clientSettingState?.updateNeeded?.value])
-
   return (
     <>
       <ThemeProvider>
