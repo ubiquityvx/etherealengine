@@ -135,7 +135,7 @@ export const useUserMediaWindowHook = ({ peerID, type }: Props) => {
 
   const harkListener = useHookstate(null as ReturnType<typeof hark> | null)
   const soundIndicatorOn = useHookstate(false)
-  const isPiP = useHookstate(false)
+  const isPiP = useHookstate(true)
   const videoDisplayReady = useHookstate<boolean>(false)
 
   const resumeVideoOnUnhide = useRef<boolean>(false)
@@ -366,7 +366,7 @@ export const useUserMediaWindowHook = ({ peerID, type }: Props) => {
     return username
   }
 
-  const togglePiP = () => isPiP.set(!isPiP.value)
+  const togglePiP = () => isPiP.set(true)
 
   const username = getUsername() as UserName
 
@@ -581,7 +581,7 @@ export const UserMediaWindow = ({ peerID, type }: Props): JSX.Element => {
         <span key={peerID + '-' + type + '-audio-container'} id={peerID + '-' + type + '-audio-container'} />
         <div className={styles['user-controls']}>
           <div className={styles['username']}>{username}</div>
-          <div className={styles['controls']}>
+          <div className={styles['controls']} style={{ display: 'none' }}>
             <div className={styles['mute-controls']}>
               {videoStream && !videoProducerPaused ? (
                 <Tooltip title={!videoProducerPaused && !videoStreamPaused ? 'Pause Video' : 'Resume Video'}>
@@ -647,18 +647,6 @@ export const UserMediaWindow = ({ peerID, type }: Props): JSX.Element => {
                   />
                 </Tooltip>
               ) : null}
-              <Tooltip title={t('user:person.openPictureInPicture') as string}>
-                <IconButton
-                  size="large"
-                  className={styles['icon-button']}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    togglePiP()
-                  }}
-                  icon={<Icon type="Launch" className={styles.pipBtn} />}
-                />
-              </Tooltip>
             </div>
             {audioProducerGlobalMute && <div className={styles['global-mute']}>Muted by Admin</div>}
             {audioStream && !audioProducerPaused && !audioProducerGlobalMute && (

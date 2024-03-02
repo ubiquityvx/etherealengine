@@ -31,16 +31,10 @@ import {
   useMediaNetwork
 } from '@etherealengine/client-core/src/common/services/MediaInstanceConnectionService'
 import { LocationState } from '@etherealengine/client-core/src/social/services/LocationService'
-import {
-  toggleMicrophonePaused,
-  toggleScreenshare,
-  toggleWebcamPaused
-} from '@etherealengine/client-core/src/transports/SocketWebRTCClientFunctions'
 import logger from '@etherealengine/common/src/logger'
 import { AudioEffectPlayer } from '@etherealengine/engine/src/audio/systems/MediaSystem'
 import { dispatchAction, getMutableState, useHookstate } from '@etherealengine/hyperflux'
 import { NetworkState } from '@etherealengine/spatial/src/networking/NetworkState'
-import { endXRSession, requestXRSession } from '@etherealengine/spatial/src/xr/XRSessionFunctions'
 import { XRState } from '@etherealengine/spatial/src/xr/XRState'
 import CircularProgress from '@etherealengine/ui/src/primitives/mui/CircularProgress'
 import Icon from '@etherealengine/ui/src/primitives/mui/Icon'
@@ -54,14 +48,13 @@ import { CameraActions } from '@etherealengine/spatial/src/camera/CameraState'
 import { RegisteredWidgets, WidgetAppActions } from '@etherealengine/spatial/src/xrui/WidgetAppService'
 import IconButtonWithTooltip from '@etherealengine/ui/src/primitives/mui/IconButtonWithTooltip'
 import { useTranslation } from 'react-i18next'
-import { VrIcon } from '../../common/components/Icons/VrIcon'
 import { RecordingUIState } from '../../systems/ui/RecordingsWidgetUI'
-import { MediaStreamService, MediaStreamState } from '../../transports/MediaStreams'
+import { MediaStreamState } from '../../transports/MediaStreams'
 import { useShelfStyles } from '../Shelves/useShelfStyles'
+import { useFullscreen } from '../useFullscreen'
 import styles from './index.module.scss'
 
 export const MediaIconsBox = () => {
-  const { t } = useTranslation()
   const playbackState = useHookstate(getMutableState(PlaybackState))
   const recordingState = useHookstate(getMutableState(RecordingState))
 
@@ -133,7 +126,9 @@ export const MediaIconsBox = () => {
 
   const xrSessionActive = xrState.sessionActive.value
   const handleExitSpectatorClick = () => dispatchAction(CameraActions.exitSpectate({}))
-
+  const { t } = useTranslation()
+  const [fullScreenActive, setFullScreenActive] = useFullscreen()
+  const { bottomShelfStyle } = useShelfStyles()
   return (
     <section className={`${styles.drawerBox} ${topShelfStyle}`}>
       {networkState.config.media.value && !mediaNetworkState?.ready.value && (
@@ -152,20 +147,21 @@ export const MediaIconsBox = () => {
           </div>
         </div>
       )}
-      {audioEnabled && hasAudioDevice.value && mediaNetworkReady && mediaNetworkState?.ready.value ? (
-        <IconButtonWithTooltip
-          id="UserAudio"
-          title={t('user:menu.toggleMute')}
-          className={styles.iconContainer + ' ' + (isCamAudioEnabled ? styles.on : '')}
-          onClick={toggleMicrophonePaused}
-          onPointerUp={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
-          onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
-          icon={<Icon type={isCamAudioEnabled ? 'Mic' : 'MicOff'} />}
-        />
-      ) : null}
+      {/* {audioEnabled && hasAudioDevice.value && mediaNetworkReady && mediaNetworkState?.ready.value
+        ? null
+        : //    <IconButtonWithTooltip
+          //    id="UserAudio"
+          //    title={t('user:menu.toggleMute')}
+          //    className={styles.iconContainer + ' ' + (isCamAudioEnabled ? styles.on : '')}
+          //    onClick={toggleMicrophonePaused}
+          //    onPointerUp={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
+          //    onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
+          //    icon={<Icon type={isCamAudioEnabled ? 'Mic' : 'MicOff'} />}
+          //  />
+          null} */}
       {videoEnabled && hasVideoDevice.value && mediaNetworkReady && mediaNetworkState?.ready.value ? (
         <>
-          <IconButtonWithTooltip
+          {/* <IconButtonWithTooltip
             id="UserVideo"
             title={t('user:menu.toggleVideo')}
             className={styles.iconContainer + ' ' + (isCamVideoEnabled ? styles.on : '')}
@@ -184,7 +180,7 @@ export const MediaIconsBox = () => {
               onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
               icon={<Icon type={'FlipCameraAndroid'} />}
             />
-          )}
+          )} */}
           <IconButtonWithTooltip
             id="UserPoseTracking"
             title={t('user:menu.poseTracking')}
@@ -194,7 +190,8 @@ export const MediaIconsBox = () => {
             onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
             icon={<Icon type={'Accessibility'} />}
           />
-          <IconButtonWithTooltip
+
+          {/* <IconButtonWithTooltip
             id="UserScreenSharing"
             title={t('user:menu.shareScreen')}
             className={styles.iconContainer + ' ' + (isScreenVideoEnabled ? styles.on : '')}
@@ -202,10 +199,30 @@ export const MediaIconsBox = () => {
             onPointerUp={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
             onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
             icon={<Icon type="ScreenShare" />}
-          />
+          /> */}
+
+          {fullScreenActive ? (
+            <IconButtonWithTooltip
+              title={t('user:menu.exitFullScreen')}
+              className={styles.iconContainer + ' ' + (isMotionCaptureEnabled ? styles.on : '')}
+              onClick={() => setFullScreenActive(false)}
+              onPointerUp={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
+              onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
+              icon={<Icon type="FullscreenExit" />}
+            />
+          ) : (
+            <IconButtonWithTooltip
+              title={t('user:menu.enterFullScreen')}
+              className={styles.iconContainer}
+              onClick={() => setFullScreenActive(true)}
+              onPointerUp={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
+              onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
+              icon={<Icon type="ZoomOutMap" />}
+            />
+          )}
         </>
       ) : null}
-      {supportsVR && (
+      {/* {supportsVR && (
         <IconButtonWithTooltip
           id="UserVR"
           title={t('user:menu.enterVR')}
@@ -217,8 +234,8 @@ export const MediaIconsBox = () => {
           onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
           icon={<VrIcon />}
         />
-      )}
-      {supportsAR && (
+      )} */}
+      {/* {supportsAR && (
         <IconButtonWithTooltip
           id="UserAR"
           title={t('user:menu.enterAR')}
@@ -230,8 +247,8 @@ export const MediaIconsBox = () => {
           onPointerEnter={() => AudioEffectPlayer.instance.play(AudioEffectPlayer.SOUNDS.ui)}
           icon={<Icon type="ViewInAr" />}
         />
-      )}
-      {spectating && (
+      )} */}
+      {/* {spectating && (
         <button
           type="button"
           id="ExitSpectator"
@@ -243,7 +260,7 @@ export const MediaIconsBox = () => {
         >
           Exit Spectate
         </button>
-      )}
+      )} */}
       {/* {recordScopes && (
         <>
           {recordingState.recordingID.value || playbackState.recordingID.value ? (

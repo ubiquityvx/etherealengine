@@ -131,7 +131,10 @@ export const UserMediaWindows = () => {
         {windows
           .filter(({ peerID }) => peerMediaChannelState[peerID].value)
           .map(({ peerID, type }) => (
-            <UserMediaWindow type={type} peerID={peerID} key={type + '-' + peerID} />
+            <>
+              <UserMediaWindow type={type} peerID={peerID} key={type + '-' + peerID} />
+              <UserMediaWindow type={type} peerID={peerID} key={type + '-' + peerID} />
+            </>
           ))}
       </div>
     </div>
