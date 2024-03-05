@@ -24,7 +24,6 @@ Ethereal Engine. All Rights Reserved.
 */
 
 import React, { useState } from 'react'
-import img from './vid.png'
 
 const StatsStyle = (props) => {
   return (
@@ -61,8 +60,8 @@ export const Info = () => {
       style={{
         zIndex: 2,
         background: 'white',
-        width: '600px',
-        height: '450px',
+        width: '800px',
+        height: '550px',
         overflow: 'hidden',
         borderRadius: '10px',
         display: 'flex',
@@ -83,25 +82,63 @@ export const Info = () => {
           justifyContent: 'center'
         }}
       >
-        Bubble Arm Raise
+        Calibrate!
       </div>
-      <div style={{ padding: '20px 30px', height: '100%', width: '100%', textAlign: 'center' }}>
-        Hey There, its an example how to do this:
+      <div style={{ padding: '20px 30px', height: 'auto', width: '100%', textAlign: 'center' }}>
+        Hey there just smile
       </div>
-      <img
-        style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'cover' }}
-        src={img}
-        alt="thumbnail"
-      />
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <iframe width={'100%'} height={'100%'} src={`/capture/${location.pathname.split('/')[2]}`} />
+      </div>
     </div>
   )
 }
+;` 
+
+<div
+style={{
+  zIndex: 2,
+  background: 'white',
+  width: '800px',
+  height: '550px',
+  overflow: 'hidden',
+  borderRadius: '10px',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  alignItems: 'space-between'
+}}
+>
+<div
+  style={{
+    background: 'black',
+    padding: '20px 30px 20px 30px',
+    color: '#0ED8A5',
+    display: 'flex',
+    fontSize: '32px',
+    fontWeight: '700',
+    width: '100%',
+    justifyContent: 'center'
+  }}
+>
+  Bubble Arm Raise
+</div>
+<div style={{ padding: '20px 30px', height: '100%', width: '100%', textAlign: 'center' }}>
+  Hey There, its an example how to do this:
+</div>
+<img
+  style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'contain' }}
+  src={img}
+  alt="thumbnail"
+/>
+</div>
+`
 
 export const Score = () => {
   const [start, setStart] = useState(false)
-  setTimeout(() => {
-    setStart(true)
-  }, 10000)
+  // setTimeout(() => {
+  //   setStart(true)
+  // }, 10000)
 
   return (
     <div

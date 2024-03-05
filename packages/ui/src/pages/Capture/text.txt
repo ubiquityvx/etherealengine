@@ -68,6 +68,7 @@ import { useGet } from '@etherealengine/spatial/src/common/functions/FeathersHoo
 import { throttle } from '@etherealengine/spatial/src/common/functions/FunctionHelpers'
 import { NetworkState } from '@etherealengine/spatial/src/networking/NetworkState'
 import { EngineRenderer } from '@etherealengine/spatial/src/renderer/WebGLRendererSystem'
+import Header from '@etherealengine/ui/src/components/tailwind/Header'
 import RecordingsList from '@etherealengine/ui/src/components/tailwind/RecordingList'
 import Canvas from '@etherealengine/ui/src/primitives/tailwind/Canvas'
 import Video from '@etherealengine/ui/src/primitives/tailwind/Video'
@@ -648,7 +649,7 @@ const CaptureDashboard = () => {
 
   return (
     <div className="container mx-auto w-full max-w-[1024px] overflow-hidden">
-      {/* <Header mode={mode} /> */}
+      <Header mode={mode} />
       {mode.value === 'playback' ? <PlaybackMode /> : <CaptureMode />}
     </div>
   )
