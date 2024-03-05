@@ -88,7 +88,12 @@ export const Info = () => {
         Hey there just smile
       </div>
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        <iframe width={'100%'} height={'100%'} src={`/capture/${location.pathname.split('/')[2]}`} />
+        <iframe
+          style={{ pointerEvents: 'all' }}
+          width={'100%'}
+          height={'100%'}
+          src={`/capture/${location.pathname.split('/')[2]}`}
+        />
       </div>
     </div>
   )
