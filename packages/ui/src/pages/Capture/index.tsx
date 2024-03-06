@@ -282,8 +282,8 @@ export const CaptureMode = () => {
   const recordingStatus = getRecordingStatus()
 
   return (
-    <div className="container pointer-events-auto m-4 mx-auto w-full max-w-[1024px]">
-      <div className="h-auto w-full px-2">
+    <div className="container pointer-events-auto m-4 mx-auto w-full max-w-[1024px] ">
+      <div className="h-auto w-full px-2 ">
         <div className="relative aspect-video h-auto w-full overflow-hidden">
           <div className="absolute left-0 top-0 flex h-full w-full items-center bg-black">
             <Video
@@ -291,7 +291,7 @@ export const CaptureMode = () => {
               className={twMerge('h-auto w-full opacity-100', !displaySettings?.showVideo && 'opacity-0')}
             />
           </div>
-          <div className="z-1 absolute left-0 top-0 h-auto min-w-full object-contain">
+          <div className="z-1 absolute left-0 top-0 h-auto min-w-full object-contain ">
             <Canvas ref={canvasRef} />
           </div>
           <div className="z-2 container absolute left-0 top-0 m-0 mx-auto h-full w-full bg-transparent p-0">
@@ -299,45 +299,46 @@ export const CaptureMode = () => {
           </div>
         </div>
       </div>
-      <div className="relative aspect-video h-auto w-full overflow-hidden">
-        <div className="container mx-auto w-full">
-          <Button
-            className="font=[lato] padding-[10px] m-2 h-[60px] w-[220px] rounded-full bg-[#292D3E] text-center text-sm font-bold shadow-md"
-            title="Toggle Detection"
-            onClick={() => {
-              detectingStatus.set(detectingStatus.value === 'active' ? 'inactive' : 'active')
-            }}
-          >
-            <a className="text-xl normal-case">
-              {detectingStatus.value === 'active' ? 'STOP DETECTING' : 'START DETECTING'}
-            </a>
-          </Button>
-          <Button
-            aria-disabled={recordingStatus === 'starting'}
-            className="font=[lato] padding-[10px] m-2 h-[60px] w-[220px] rounded-full bg-[#292D3E] text-center text-sm font-bold shadow-md"
-            title="Toggle Recording"
-            onClick={onToggleRecording}
-          >
-            <a className="text-xl normal-case">{recordingStatus === 'active' ? 'STOP RECORDING' : 'START RECORDING'}</a>
-          </Button>
-          {/* <Toolbar
-            className="w-full"
-            videoStatus={videoStatus}
-            detectingStatus={detectingStatus.value}
-            onToggleRecording={onToggleRecording}
-            toggleWebcam={toggleWebcamPaused}
-            toggleDetecting={() => {
-              detectingStatus.set(detectingStatus.value === 'active' ? 'inactive' : 'active')
-            }}
-            isRecording={!!recordingID.value}
-            recordingStatus={recordingStatus}
-            cycleCamera={MediaStreamService.cycleCamera}
-          /> */}
-        </div>
-      </div>
     </div>
   )
 }
+
+// <div className="relative aspect-video h-auto w-full overflow-hidden">
+// <div className="container mx-auto w-full">
+//   <Button
+//     className="font=[lato] padding-[10px] m-2 h-[60px] w-[220px] rounded-full bg-[#292D3E] text-center text-sm font-bold shadow-md"
+//     title="Toggle Detection"
+//     onClick={() => {
+//       detectingStatus.set(detectingStatus.value === 'active' ? 'inactive' : 'active')
+//     }}
+//   >
+//     <a className="text-xl normal-case">
+//       {detectingStatus.value === 'active' ? 'STOP DETECTING' : 'START DETECTING'}
+//     </a>
+//   </Button>
+//   <Button
+//     aria-disabled={recordingStatus === 'starting'}
+//     className="font=[lato] padding-[10px] m-2 h-[60px] w-[220px] rounded-full bg-[#292D3E] text-center text-sm font-bold shadow-md"
+//     title="Toggle Recording"
+//     onClick={onToggleRecording}
+//   >
+//     <a className="text-xl normal-case">{recordingStatus === 'active' ? 'STOP RECORDING' : 'START RECORDING'}</a>
+//   </Button>
+//   {/* <Toolbar
+//     className="w-full"
+//     videoStatus={videoStatus}
+//     detectingStatus={detectingStatus.value}
+//     onToggleRecording={onToggleRecording}
+//     toggleWebcam={toggleWebcamPaused}
+//     toggleDetecting={() => {
+//       detectingStatus.set(detectingStatus.value === 'active' ? 'inactive' : 'active')
+//     }}
+//     isRecording={!!recordingID.value}
+//     recordingStatus={recordingStatus}
+//     cycleCamera={MediaStreamService.cycleCamera}
+//   /> */}
+// </div>
+// </div>
 
 export const drawPoseToCanvas = (
   canvasCtxRef: React.MutableRefObject<CanvasRenderingContext2D | undefined>,

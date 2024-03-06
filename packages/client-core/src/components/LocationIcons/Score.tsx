@@ -24,6 +24,7 @@ Ethereal Engine. All Rights Reserved.
 */
 
 import React, { useEffect, useState } from 'react'
+import docO from './doc.jpg'
 
 const StatsStyle = (props) => {
   return (
@@ -82,58 +83,59 @@ export const Info = () => {
   }, [])
 
   return (
-    <div
-      style={{
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        position: 'absolute',
-        backdropFilter: 'blur(10px) grayscale(100%)',
-        backgroundColor: 'rgba(0, 0, 0, 0.616)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <div
-        style={{
-          zIndex: 2,
-          position: 'relative',
+    <></>
+    // <div
+    //   style={{
+    //     top: 0,
+    //     left: 0,
+    //     width: '100vw',
+    //     height: '100vh',
+    //     position: 'absolute',
+    //     backdropFilter: 'blur(10px) grayscale(100%)',
+    //     backgroundColor: 'rgba(0, 0, 0, 0.616)',
+    //     display: 'flex',
+    //     justifyContent: 'center',
+    //     alignItems: 'center'
+    //   }}
+    // >
+    //   <div
+    //     style={{
+    //       zIndex: 2,
+    //       position: 'relative',
 
-          background: 'white',
-          width: '800px',
-          height: '550px',
-          overflow: 'hidden',
-          borderRadius: '10px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          alignItems: 'space-between'
-        }}
-      >
-        <div
-          style={{
-            background: 'black',
-            padding: '20px 30px 20px 30px',
-            color: '#0ED8A5',
-            display: 'flex',
-            fontSize: '32px',
-            fontWeight: '700',
-            width: '100%',
-            justifyContent: 'center'
-          }}
-        >
-          Calibrate!
-        </div>
-        <div style={{ padding: '20px 30px', height: 'auto', width: '100%', textAlign: 'center' }}>
-          Hey there just smile. Calibration completes on {count}
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <iframe width={'100%'} height={'100%'} src={`/capture/${location.pathname.split('/')[2]}`} />
-        </div>
-      </div>
-    </div>
+    //       background: 'white',
+    //       width: '800px',
+    //       height: '550px',
+    //       overflow: 'hidden',
+    //       borderRadius: '10px',
+    //       display: 'flex',
+    //       flexDirection: 'column',
+    //       justifyContent: 'space-between',
+    //       alignItems: 'space-between'
+    //     }}
+    //   >
+    //     <div
+    //       style={{
+    //         background: 'black',
+    //         padding: '20px 30px 20px 30px',
+    //         color: '#0ED8A5',
+    //         display: 'flex',
+    //         fontSize: '32px',
+    //         fontWeight: '700',
+    //         width: '100%',
+    //         justifyContent: 'center'
+    //       }}
+    //     >
+    //       Calibrate!
+    //     </div>
+    //     <div style={{ padding: '20px 30px', height: 'auto', width: '100%', textAlign: 'center' }}>
+    //       Hey there just smile. Calibration completes on {count}
+    //     </div>
+    //     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    //       <iframe width={'100%'} height={'100%'} src={`/capture/${location.pathname.split('/')[2]}`} />
+    //     </div>
+    //   </div>
+    // </div>
   )
 }
 ;` 
@@ -226,6 +228,33 @@ export const Score = () => {
         @import
         url('https://fonts.googleapis.com/css2?family=Anta&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap')
       </style>
+      <div style={{ position: 'absolute', top: 30, right: 30 }}>
+        <div
+          style={{
+            width: 200,
+            height: 300,
+            background: 'white',
+            borderRadius: 15,
+            overflow: 'hidden',
+            border: '3px solid white'
+          }}
+        >
+          <img style={{ width: '100%', height: '100%', objectFit: 'cover' }} src={docO} />
+        </div>
+        <div
+          style={{
+            width: 200,
+            height: 300,
+            marginTop: 20,
+            background: 'white',
+            borderRadius: 15,
+            overflow: 'hidden',
+            border: '3px solid white'
+          }}
+        >
+          <iframe width={'100%'} height={'100%'} src={`/capture/${location.pathname.split('/')[2]}`} />
+        </div>
+      </div>
       <div
         style={{
           width: '100%',

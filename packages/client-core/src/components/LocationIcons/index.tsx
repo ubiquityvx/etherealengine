@@ -29,7 +29,6 @@ import { getMutableState, useHookstate } from '@etherealengine/hyperflux'
 
 import { LoadingSystemState } from '../../systems/state/LoadingState'
 import { MediaIconsBox } from '../MediaIconsBox'
-import { UserMediaWindows } from '../UserMediaWindows'
 import styles from './index.module.scss'
 import { Score } from './Score'
 
@@ -41,7 +40,7 @@ export const LocationIcons = () => {
       {/** Container for fading most stuff in and out depending on if the location is loaded or not  */}
       <div style={{ opacity: 1 - loadingScreenOpacity.value }}>
         <div className={`${styles.rightSidebar}`}>
-          <UserMediaWindows />
+          {/* <UserMediaWindows /> */}
           {/* <InstanceChatWrapper /> */}
         </div>
         {/* <Shelves /> */}
