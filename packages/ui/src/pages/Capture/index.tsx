@@ -216,6 +216,8 @@ export const CaptureMode = () => {
   }, [displaySettings.flipVideo])
 
   useLayoutEffect(() => {
+    toggleWebcamPaused()
+    detectingStatus.set('active')
     canvasCtxRef.current = canvasRef.current!.getContext('2d')!
     videoRef.current!.srcObject = videoStream.value
     resizeCanvas()
@@ -292,14 +294,9 @@ export const CaptureMode = () => {
           <div className="z-1 absolute left-0 top-0 h-auto min-w-full object-contain">
             <Canvas ref={canvasRef} />
           </div>
-          <Button
-            className="z-2 container absolute left-0 top-0 m-0 mx-auto h-full w-full bg-transparent p-0"
-            onClick={() => {
-              if (mediaNetworkState?.connected?.value) toggleWebcamPaused()
-            }}
-          >
+          <div className="z-2 container absolute left-0 top-0 m-0 mx-auto h-full w-full bg-transparent p-0">
             <a>{!videoStream.value ? 'CLICK TO ENABLE VIDEO' : ''}</a>
-          </Button>
+          </div>
         </div>
       </div>
       <div className="relative aspect-video h-auto w-full overflow-hidden">

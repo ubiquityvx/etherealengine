@@ -23,7 +23,7 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const StatsStyle = (props) => {
   return (
@@ -55,50 +55,89 @@ const StatsStyle = (props) => {
 }
 
 export const Info = () => {
+  const [count, setCount] = useState(20)
+  const [frameStyle, setFrameStyle] = useState({})
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCount((prevCount) => {
+        if (prevCount > 0) {
+          return prevCount - 1
+        } else {
+          setFrameStyle({
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            transform: 'scale(0.5)',
+            pointerEvents: 'all',
+            width: '100%',
+            height: '100%'
+          })
+          return 0
+        }
+      })
+    }, 1000)
+
+    return () => clearInterval(intervalId)
+  }, [])
+
   return (
     <div
       style={{
-        zIndex: 2,
-        background: 'white',
-        width: '800px',
-        height: '550px',
-        overflow: 'hidden',
-        borderRadius: '10px',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        position: 'absolute',
+        backdropFilter: 'blur(10px) grayscale(100%)',
+        backgroundColor: 'rgba(0, 0, 0, 0.616)',
         display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        alignItems: 'space-between'
+        justifyContent: 'center',
+        alignItems: 'center'
       }}
     >
       <div
         style={{
-          background: 'black',
-          padding: '20px 30px 20px 30px',
-          color: '#0ED8A5',
+          zIndex: 2,
+          position: 'relative',
+
+          background: 'white',
+          width: '800px',
+          height: '550px',
+          overflow: 'hidden',
+          borderRadius: '10px',
           display: 'flex',
-          fontSize: '32px',
-          fontWeight: '700',
-          width: '100%',
-          justifyContent: 'center'
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          alignItems: 'space-between'
         }}
       >
-        Calibrate!
-      </div>
-      <div style={{ padding: '20px 30px', height: 'auto', width: '100%', textAlign: 'center' }}>
-        Hey there just smile
-      </div>
-      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        <iframe
-          style={{ pointerEvents: 'all' }}
-          width={'100%'}
-          height={'100%'}
-          src={`/capture/${location.pathname.split('/')[2]}`}
-        />
+        <div
+          style={{
+            background: 'black',
+            padding: '20px 30px 20px 30px',
+            color: '#0ED8A5',
+            display: 'flex',
+            fontSize: '32px',
+            fontWeight: '700',
+            width: '100%',
+            justifyContent: 'center'
+          }}
+        >
+          Calibrate!
+        </div>
+        <div style={{ padding: '20px 30px', height: 'auto', width: '100%', textAlign: 'center' }}>
+          Hey there just smile. Calibration completes on {count}
+        </div>
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+          <iframe width={'100%'} height={'100%'} src={`/capture/${location.pathname.split('/')[2]}`} />
+        </div>
       </div>
     </div>
   )
 }
 ;` 
+style={count !== 0 ? { position: 'relative', width: '100%', height: '100%' } : frameStyle}
 
 <div
 style={{
@@ -157,15 +196,22 @@ export const Score = () => {
         width: '100vw',
         height: '100vh',
         flexDirection: 'column',
-        fontFamily: 'Anta, sans-serif'
+        fontFamily: 'Anta, sans-serif',
+        zIndex: 999
       }}
     >
-      {!start ? (
-        <div
+      {' '}
+      <div
+        id="UiMount"
+        style={{ pointerEvents: 'all', position: 'fixed', top: 0, left: 0, height: '100vh', width: '100vw', zIndex: 3 }}
+      >
+        {/* <div
           style={{
+            top: 0,
+            left: 0,
             width: '100vw',
             height: '100vh',
-            position: 'fixed',
+            position: 'absolute',
             backdropFilter: 'blur(10px) grayscale(100%)',
             backgroundColor: 'rgba(0, 0, 0, 0.616)',
             display: 'flex',
@@ -174,8 +220,8 @@ export const Score = () => {
           }}
         >
           <Info />
-        </div>
-      ) : null}
+        </div> */}
+      </div>
       <style>
         @import
         url('https://fonts.googleapis.com/css2?family=Anta&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap')

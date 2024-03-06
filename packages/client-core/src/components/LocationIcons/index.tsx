@@ -47,8 +47,8 @@ export const LocationIcons = () => {
         {/* <Shelves /> */}
         {/* <ARPlacement /> */}
         {/* <XRLoading /> */}
-        <MediaIconsBox />
         <Score />
+        <MediaIconsBox />
         {/* <TouchGamepad /> */}
         {/* {!iOS && <Fullscreen />} */}
       </div>
