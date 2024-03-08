@@ -216,8 +216,11 @@ export const CaptureMode = () => {
   }, [displaySettings.flipVideo])
 
   useLayoutEffect(() => {
+    // setTimeout(() => {
     toggleWebcamPaused()
     detectingStatus.set('active')
+    // }, 5000)
+
     canvasCtxRef.current = canvasRef.current!.getContext('2d')!
     videoRef.current!.srcObject = videoStream.value
     resizeCanvas()
