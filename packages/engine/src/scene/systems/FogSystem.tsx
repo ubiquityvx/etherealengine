@@ -23,12 +23,12 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
+import { Not } from 'bitecs'
 import React, { useEffect } from 'react'
 import { Fog, FogExp2, Mesh, MeshStandardMaterial, Shader } from 'three'
 
 import { getMutableState, getState, useHookstate } from '@etherealengine/hyperflux'
 
-import { PresentationSystemGroup } from '@etherealengine/ecs'
 import { ECSState } from '@etherealengine/ecs/src/ECSState'
 import { Engine } from '@etherealengine/ecs/src/Engine'
 import { defineSystem } from '@etherealengine/ecs/src/SystemFunctions'
@@ -39,9 +39,11 @@ import {
 } from '@etherealengine/spatial/src/common/functions/OnBeforeCompilePlugin'
 import { GroupQueryReactor, GroupReactorProps } from '@etherealengine/spatial/src/renderer/components/GroupComponent'
 import { VisibleComponent } from '@etherealengine/spatial/src/renderer/components/VisibleComponent'
+import { SceneTagComponent } from '../components/SceneTagComponent'
 import { FogType } from '../constants/FogType'
 import { FogSettingState } from '../FogState'
 import { initBrownianMotionFogShader, initHeightFogShader, removeFogShader } from '../functions/FogShaders'
+import { SceneLoadingSystem } from './SceneLoadingSystem'
 
 export const FogShaders = [] as Shader[]
 
@@ -159,11 +161,13 @@ const reactor = () => {
       }
   }, [fog.height])
 
-  return <GroupQueryReactor GroupChildReactor={FogGroupReactor} Components={[VisibleComponent]} />
+  return (
+    <GroupQueryReactor GroupChildReactor={FogGroupReactor} Components={[Not(SceneTagComponent), VisibleComponent]} />
+  )
 }
 
 export const FogSystem = defineSystem({
   uuid: 'ee.engine.FogSystem',
-  insert: { after: PresentationSystemGroup },
+  insert: { with: SceneLoadingSystem },
   reactor
 })

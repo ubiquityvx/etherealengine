@@ -23,47 +23,50 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import { EntityUUID } from '@etherealengine/common/src/interfaces/EntityUUID'
-import { SceneID } from '@etherealengine/common/src/schema.type.module'
-import { setComponent } from '@etherealengine/ecs/src/ComponentFunctions'
-import { UndefinedEntity } from '@etherealengine/ecs/src/Entity'
+import { getComponent, setComponent } from '@etherealengine/ecs/src/ComponentFunctions'
+import { Entity, UndefinedEntity } from '@etherealengine/ecs/src/Entity'
 import { createEntity } from '@etherealengine/ecs/src/EntityFunctions'
-import { getMutableState } from '@etherealengine/hyperflux'
+import { SceneState } from '@etherealengine/engine/src/scene/Scene'
+import { SceneObjectComponent } from '@etherealengine/engine/src/scene/components/SceneObjectComponent'
+import { SourceComponent } from '@etherealengine/engine/src/scene/components/SourceComponent'
+import { getState } from '@etherealengine/hyperflux'
 import { NameComponent } from '@etherealengine/spatial/src/common/NameComponent'
 import { UUIDComponent } from '@etherealengine/spatial/src/common/UUIDComponent'
 import { VisibleComponent } from '@etherealengine/spatial/src/renderer/components/VisibleComponent'
 import { EntityTreeComponent } from '@etherealengine/spatial/src/transform/components/EntityTree'
 import { TransformComponent } from '@etherealengine/spatial/src/transform/components/TransformComponent'
-import { SceneState } from '../../src/scene/Scene'
-import { SceneObjectComponent } from '../../src/scene/components/SceneObjectComponent'
-import { SceneTagComponent } from '../../src/scene/components/SceneTagComponent'
-import { SourceComponent } from '../../src/scene/components/SourceComponent'
+import { MathUtils } from 'three'
 
-export const loadEmptyScene = () => {
-  SceneState.loadScene('test' as SceneID, {
-    name: '',
-    thumbnailUrl: '',
-    project: '',
-    scenePath: 'test' as SceneID,
-    scene: {
-      entities: {
-        ['root' as EntityUUID]: {
-          name: 'Root',
-          components: []
-        }
-      },
-      version: 0,
-      root: 'root' as EntityUUID
-    }
-  })
-  getMutableState(SceneState).activeScene.set('test' as SceneID)
+import { EntityUUID } from '@etherealengine/common/src/interfaces/EntityUUID'
+import { SceneID } from '@etherealengine/common/src/schema.type.module'
+import { proxifyParentChildRelationships } from '@etherealengine/engine/src/scene/functions/loadGLTFModel'
+import { addObjectToGroup } from '@etherealengine/spatial/src/renderer/components/GroupComponent'
+import { Group } from 'three'
+
+export const createSceneEntity = (name: string, parentEntity: Entity = UndefinedEntity, sceneID?: SceneID): Entity => {
   const entity = createEntity()
-  setComponent(entity, NameComponent, 'Root')
-  setComponent(entity, VisibleComponent, true)
-  setComponent(entity, UUIDComponent, 'root' as EntityUUID)
-  setComponent(entity, SceneTagComponent, true)
+  setComponent(entity, NameComponent, name)
+  setComponent(entity, VisibleComponent)
   setComponent(entity, TransformComponent)
+  setComponent(entity, EntityTreeComponent, { parentEntity })
+
+  if (parentEntity != null) {
+    sceneID ??= getComponent(parentEntity!, SourceComponent)
+  }
+  sceneID ??= getState(SceneState).activeScene!
+  setComponent(entity, SourceComponent, sceneID)
+
+  const uuid = MathUtils.generateUUID() as EntityUUID
+  setComponent(entity, UUIDComponent, uuid)
+
   setComponent(entity, SceneObjectComponent)
-  setComponent(entity, EntityTreeComponent, { parentEntity: UndefinedEntity })
-  setComponent(entity, SourceComponent, 'test' as SceneID)
+
+  // These additional properties and relations are required for
+  // the current GLTF exporter to successfully generate a GLTF.
+  const obj3d = new Group()
+  obj3d.entity = entity
+  addObjectToGroup(entity, obj3d)
+  proxifyParentChildRelationships(obj3d)
+
+  return entity
 }

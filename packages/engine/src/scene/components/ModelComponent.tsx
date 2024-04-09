@@ -26,7 +26,7 @@ Ethereal Engine. All Rights Reserved.
 import { useEffect } from 'react'
 import { AnimationMixer, BoxGeometry, CapsuleGeometry, CylinderGeometry, Group, Scene, SphereGeometry } from 'three'
 
-import { NO_PROXY, getState, useHookstate } from '@etherealengine/hyperflux'
+import { NO_PROXY, createState, getMutableState, getState, none, useHookstate } from '@etherealengine/hyperflux'
 
 import {
   defineComponent,
@@ -42,6 +42,7 @@ import {
 import { Engine } from '@etherealengine/ecs/src/Engine'
 import { Entity } from '@etherealengine/ecs/src/Entity'
 import { useEntityContext } from '@etherealengine/ecs/src/EntityFunctions'
+import { useQuery } from '@etherealengine/ecs/src/QueryFunctions'
 import { SceneState } from '@etherealengine/engine/src/scene/Scene'
 import { CameraComponent } from '@etherealengine/spatial/src/camera/components/CameraComponent'
 import { UUIDComponent } from '@etherealengine/spatial/src/common/UUIDComponent'
@@ -58,19 +59,22 @@ import { useGLTF } from '../../assets/functions/resourceHooks'
 import { GLTF } from '../../assets/loaders/gltf/GLTFLoader'
 import { AnimationComponent } from '../../avatar/components/AnimationComponent'
 import { AvatarRigComponent } from '../../avatar/components/AvatarAnimationComponent'
-import { autoconvertMixamoAvatar } from '../../avatar/functions/avatarFunctions'
+import { autoconvertMixamoAvatar, isAvaturn } from '../../avatar/functions/avatarFunctions'
 import { addError, removeError } from '../functions/ErrorFunctions'
 import { parseGLTFModel, proxifyParentChildRelationships } from '../functions/loadGLTFModel'
-import { getModelSceneID, useModelSceneID } from '../functions/loaders/ModelFunctions'
+import { getModelSceneID } from '../functions/loaders/ModelFunctions'
 import { EnvmapComponent } from './EnvmapComponent'
 import { ObjectGridSnapComponent } from './ObjectGridSnapComponent'
 import { SceneAssetPendingTagComponent } from './SceneAssetPendingTagComponent'
-import { SceneComponent } from './SceneComponent'
+import { SceneObjectComponent } from './SceneObjectComponent'
 import { ShadowComponent } from './ShadowComponent'
+import { SourceComponent } from './SourceComponent'
+
+const entitiesInModelHierarchy = {} as Record<Entity, Entity[]>
 
 export const ModelComponent = defineComponent({
-  name: 'ModelComponent',
-  jsonID: 'EE_model',
+  name: 'Model Component',
+  jsonID: 'gltf-model',
 
   onInit: (entity) => {
     return {
@@ -79,8 +83,7 @@ export const ModelComponent = defineComponent({
       /** optional, only for bone matchable avatars */
       convertToVRM: false as boolean,
       // internal
-      assetTypeOverride: null as null | AssetType,
-      scene: null as Group | null,
+      scene: null as Scene | null,
       asset: null as VRM | GLTF | null
     }
   },
@@ -106,25 +109,30 @@ export const ModelComponent = defineComponent({
      */
     if (
       !getState(SceneState).sceneLoaded &&
-      hasComponent(entity, SceneComponent) &&
+      hasComponent(entity, SceneObjectComponent) &&
       component.src.value &&
-      !component.asset.value
+      !component.scene.value
     )
       SceneAssetPendingTagComponent.addResource(entity, component.src.value)
   },
 
   errors: ['LOADING_ERROR', 'INVALID_SOURCE'],
 
-  reactor: ModelReactor
+  reactor: ModelReactor,
+
+  /** Tracks all child entities loaded by this model */
+  entitiesInModelHierarchyState: createState(entitiesInModelHierarchy),
+  entitiesInModelHierarchy: entitiesInModelHierarchy as Readonly<typeof entitiesInModelHierarchy>
 })
 
 function ModelReactor(): JSX.Element {
   const entity = useEntityContext()
   const modelComponent = useComponent(entity, ModelComponent)
-  const uuidComponent = useOptionalComponent(entity, UUIDComponent)
 
+  /** @todo this is a hack */
+  const override = !isAvaturn(modelComponent.src.value) ? undefined : AssetType.glB
   const [gltf, unload, error, progress] = useGLTF(modelComponent.src.value, entity, {
-    forceAssetType: modelComponent.assetTypeOverride.value,
+    forceAssetType: override,
     ignoreDisposeGeometry: modelComponent.cameraOcclusion.value
   })
 
@@ -157,15 +165,7 @@ function ModelReactor(): JSX.Element {
 
   useEffect(() => {
     const loadedAsset = gltf.get(NO_PROXY)
-    if (!loadedAsset) {
-      if (!hasComponent(entity, GroupComponent)) {
-        const obj3d = new Group()
-        obj3d.entity = entity
-        addObjectToGroup(entity, obj3d)
-        proxifyParentChildRelationships(obj3d)
-      }
-      return
-    }
+    if (!loadedAsset) return
 
     if (typeof loadedAsset !== 'object') {
       addError(entity, ModelComponent, 'INVALID_SOURCE', 'Invalid URL')
@@ -183,6 +183,13 @@ function ModelReactor(): JSX.Element {
         mixer: new AnimationMixer(boneMatchedAsset.humanoid.normalizedHumanBonesRoot)
       })
 
+    if (!hasComponent(entity, GroupComponent)) {
+      const obj3d = new Group()
+      obj3d.entity = entity
+      addObjectToGroup(entity, obj3d)
+      proxifyParentChildRelationships(obj3d)
+    }
+
     modelComponent.asset.set(boneMatchedAsset)
   }, [gltf])
 
@@ -196,9 +203,11 @@ function ModelReactor(): JSX.Element {
 
     removeError(entity, ModelComponent, 'INVALID_SOURCE')
     removeError(entity, ModelComponent, 'LOADING_ERROR')
-    const sceneObj = group[0] as Group
+    const sceneObj = group[0] as Scene
 
     sceneObj.userData.src = model.src
+    sceneObj.userData.sceneID = getModelSceneID(entity)
+    //sceneObj.userData.type === 'glb' && delete asset.scene.userData.type
     modelComponent.scene.set(sceneObj)
   }, [modelComponent.asset])
 
@@ -241,21 +250,20 @@ function ModelReactor(): JSX.Element {
           SceneAssetPendingTagComponent.removeResource(entity, src)
         })
 
-    const gltf = asset as GLTF
-    if (gltf.animations?.length) scene.animations = gltf.animations
-    if (scene.animations?.length) {
-      setComponent(entity, AnimationComponent, {
-        mixer: new AnimationMixer(scene),
-        animations: scene.animations
-      })
-    }
     return () => {
-      SceneState.unloadScene(uuid)
+      getMutableState(SceneState).scenes[uuid].set(none)
     }
   }, [modelComponent.scene])
 
-  const sceneInstanceID = useModelSceneID(entity)
-  const childEntities = useHookstate(SceneComponent.entitiesBySceneState[sceneInstanceID])
+  const childQuery = useQuery([SourceComponent])
+  useEffect(() => {
+    const modelSceneID = getModelSceneID(entity)
+    ModelComponent.entitiesInModelHierarchyState[entity].set(
+      childQuery.filter((e) => getComponent(e, SourceComponent) === modelSceneID)
+    )
+  }, [JSON.stringify(childQuery)])
+
+  const childEntities = useHookstate(ModelComponent.entitiesInModelHierarchyState[entity])
 
   return (
     <>
@@ -336,7 +344,13 @@ const ThreeToPhysics = {
 export const useMeshOrModel = (entity: Entity) => {
   const meshComponent = useOptionalComponent(entity, MeshComponent)
   const modelComponent = useOptionalComponent(entity, ModelComponent)
-  const sceneComponent = useOptionalComponent(entity, SceneComponent)
-  const isEntityHierarchyOrMesh = (!sceneComponent && !!meshComponent) || !!modelComponent
+  const sourceComponent = useOptionalComponent(entity, SourceComponent)
+  const isEntityHierarchyOrMesh = (!sourceComponent && !!meshComponent) || !!modelComponent
   return isEntityHierarchyOrMesh
+}
+
+export const useContainsMesh = (entity: Entity) => {
+  const meshComponent = useOptionalComponent(entity, MeshComponent)
+  const childEntities = useHookstate(ModelComponent.entitiesInModelHierarchyState[entity])
+  return !!meshComponent || !!childEntities.value?.find((e: Entity) => getComponent(e, MeshComponent))
 }

@@ -45,7 +45,7 @@ export enum SDFMode {
 
 export const SDFComponent = defineComponent({
   name: 'SDFComponent',
-  jsonID: 'EE_sdf',
+  jsonID: 'SDF',
 
   onInit: (entity) => {
     return {

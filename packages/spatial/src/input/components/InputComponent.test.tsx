@@ -32,7 +32,6 @@ import {
   setComponent
 } from '@etherealengine/ecs/src/ComponentFunctions'
 import { Engine, destroyEngine } from '@etherealengine/ecs/src/Engine'
-import { ReactorReconciler } from '@etherealengine/hyperflux'
 import { createEngine } from '../../initializeEngine'
 import { HighlightComponent } from '../../renderer/components/HighlightComponent'
 import { InputComponent } from './InputComponent'
@@ -46,17 +45,16 @@ describe('InputComponent', () => {
     const entity = Engine.instance.originEntity
 
     const json = { highlight: true, grow: true }
-    ReactorReconciler.flushSync(() => {
-      setComponent(entity, InputComponent, json)
-    })
+    setComponent(entity, InputComponent, json)
     const inputComponent = getComponent(entity, InputComponent)
 
     assert(inputComponent.grow === json.grow)
     assert(inputComponent.highlight === json.highlight)
 
-    ReactorReconciler.flushSync(() => {
-      getMutableComponent(entity, InputComponent).inputSources.merge([entity])
-    })
+    getMutableComponent(entity, InputComponent).inputSources.merge([entity])
+
+    // force reactor to run again
+    setComponent(entity, InputComponent)
 
     assert(hasComponent(entity, HighlightComponent))
   })

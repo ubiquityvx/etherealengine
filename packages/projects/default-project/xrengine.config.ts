@@ -55,9 +55,6 @@ const config: ProjectConfigInterface = {
     },
     '/chat': {
       component: () => import('@etherealengine/client/src/pages/chat/chat')
-    },
-    '/xadm': {
-      component: () => import('@etherealengine/client/src/pages/admin2')
     }
   }
 }

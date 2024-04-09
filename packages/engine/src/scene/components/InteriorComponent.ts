@@ -41,7 +41,7 @@ export type InteriorComponentType = {
 
 export const InteriorComponent = defineComponent({
   name: 'InteriorComponent',
-  jsonID: 'EE_interior',
+  jsonID: 'interior',
   onInit: () => {
     return {
       cubeMap: '',

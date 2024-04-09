@@ -4,7 +4,7 @@
     "1b731841-172a-4141-89cb-d1cceeec748f": {
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": 0,
@@ -25,7 +25,7 @@
           }
         },
         {
-          "name": "EE_envmapbake",
+          "name": "envmapbake",
           "props": {
             "bakePosition": {
               "x": 0,
@@ -50,7 +50,7 @@
           }
         },
         {
-          "name": "EE_camera_settings",
+          "name": "camera-settings",
           "props": {
             "fov": 50,
             "cameraNearClip": 0.1,
@@ -66,7 +66,7 @@
           }
         },
         {
-          "name": "EE_postprocessing",
+          "name": "postprocessing",
           "props": {
             "enabled": false,
             "effects": {
@@ -194,7 +194,7 @@
           }
         },
         {
-          "name": "EE_fog",
+          "name": "fog",
           "props": {
             "type": "disabled",
             "color": "#FFFFFF",
@@ -206,7 +206,7 @@
           }
         },
         {
-          "name": "EE_media_settings",
+          "name": "media-settings",
           "props": {
             "immersiveMedia": false,
             "refDistance": 20,
@@ -219,7 +219,7 @@
           }
         },
         {
-          "name": "EE_render_settings",
+          "name": "render-settings",
           "props": {
             "csm": true,
             "toneMapping": 1,
@@ -228,11 +228,11 @@
           }
         },
         {
-          "name": "EE_visible",
+          "name": "visible",
           "props": true
         },
         {
-          "name": "EE_scene_settings",
+          "name": "scene-settings",
           "props": {
             "thumbnailURL": "__$project$__/default-project/sky-station.thumbnail.jpg",
             "loadingScreenURL": "__$project$__/default-project/sky-station.loadingscreen.ktx2",
@@ -247,7 +247,7 @@
     "1e8b1451-a87f-4cd4-8556-d0732f328a3c": {
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": 52.88653533502665,
@@ -268,7 +268,7 @@
           }
         },
         {
-          "name": "EE_scene_preview_camera",
+          "name": "scene-preview-camera",
           "props": {}
         }
       ],
@@ -279,7 +279,7 @@
     "35621369-7e83-4878-953c-f30bf81dc775": {
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": 0,
@@ -300,7 +300,7 @@
           }
         },
         {
-          "name": "EE_skybox",
+          "name": "skybox",
           "props": {
             "backgroundColor": 0,
             "equirectangularPath": "__$project$__/default-project/assets/sky_skybox.jpg",
@@ -318,18 +318,18 @@
           }
         },
         {
-          "name": "EE_visible",
+          "name": "visible",
           "props": true
         }
       ],
       "parent": "1b731841-172a-4141-89cb-d1cceeec748f",
       "index": 1,
-      "name": "EE_skybox"
+      "name": "skybox"
     },
     "2b68a123-8a48-4258-a985-69a36679b4ef": {
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": 44.5,
@@ -350,7 +350,7 @@
           }
         },
         {
-          "name": "EE_spawn_point",
+          "name": "spawn-point",
           "props": {
             "permissionedUsers": []
           }
@@ -363,7 +363,7 @@
     "bd83d58b-80e4-40a2-9a1d-d45aaee0c76a": {
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": -6.099999904632568,
@@ -384,14 +384,14 @@
           }
         },
         {
-          "name": "EE_shadow",
+          "name": "shadow",
           "props": {
             "cast": true,
             "receive": true
           }
         },
         {
-          "name": "EE_model",
+          "name": "gltf-model",
           "props": {
             "src": "__$project$__/default-project/assets/Skybase.glb",
             "generateBVH": true,
@@ -399,7 +399,7 @@
           }
         },
         {
-          "name": "EE_loop_animation",
+          "name": "loop-animation",
           "props": {
             "hasAvatarAnimations": false,
             "activeClipIndex": -1,
@@ -416,7 +416,7 @@
           }
         },
         {
-          "name": "EE_envmap",
+          "name": "envmap",
           "props": {
             "type": "Texture",
             "envMapTextureType": "Equirectangular",
@@ -427,7 +427,7 @@
           }
         },
         {
-          "name": "EE_visible",
+          "name": "visible",
           "props": true
         }
       ],
@@ -438,7 +438,7 @@
     "e29dce88-8f22-4f8d-ae5d-e7dd0d55c41a": {
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": 0,
@@ -459,14 +459,14 @@
           }
         },
         {
-          "name": "EE_ambient_light",
+          "name": "ambient-light",
           "props": {
             "color": 11071487,
             "intensity": 1
           }
         },
         {
-          "name": "EE_visible",
+          "name": "visible",
           "props": true
         }
       ],
@@ -477,11 +477,11 @@
     "6a1cf0d6-ddfe-4058-b5ca-5bb18bc7efae": {
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": 49.5,
-              "y": 3,
+              "y": 2,
               "z": 0
             },
             "rotation": {
@@ -498,14 +498,33 @@
           }
         },
         {
-          "name": "EE_shadow",
+          "name": "shadow",
           "props": {
             "cast": true,
             "receive": true
           }
         },
         {
-          "name": "EE_portal",
+          "name": "collider",
+          "props": {
+            "bodyType": 1,
+            "shapeType": 1,
+            "isTrigger": true,
+            "removeMesh": true,
+            "collisionLayer": 8,
+            "collisionMask": 2,
+            "restitution": 0,
+            "triggers": [
+              {
+                "onEnter": "teleport",
+                "onExit": null,
+                "target": ""
+              }
+            ]
+          }
+        },
+        {
+          "name": "portal",
           "props": {
             "location": "apartment",
             "linkedPortalId": "da8a8f5a-7a72-4dae-acef-9ef013cb31b6",
@@ -527,7 +546,7 @@
           }
         },
         {
-          "name": "EE_visible",
+          "name": "visible",
           "props": true
         }
       ],
@@ -538,11 +557,11 @@
     "dd1eafe4-dc87-4353-b3ae-567d4f81c032": {
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": 15,
-              "y": 9,
+              "y": 8,
               "z": -5
             },
             "rotation": {
@@ -559,14 +578,33 @@
           }
         },
         {
-          "name": "EE_shadow",
+          "name": "shadow",
           "props": {
             "cast": true,
             "receive": true
           }
         },
         {
-          "name": "EE_portal",
+          "name": "collider",
+          "props": {
+            "bodyType": 1,
+            "shapeType": 1,
+            "isTrigger": true,
+            "removeMesh": true,
+            "collisionLayer": 8,
+            "collisionMask": 2,
+            "restitution": 0,
+            "triggers": [
+              {
+                "onEnter": "teleport",
+                "onExit": null,
+                "target": ""
+              }
+            ]
+          }
+        },
+        {
+          "name": "portal",
           "props": {
             "location": "",
             "linkedPortalId": "2d7f9f97-20a0-40e8-a504-682f650af501",
@@ -576,7 +614,7 @@
             "previewImageURL": "__$project$__/default-project/sky-station-Portal--%20Sky%20Station%20Interior.ktx2",
             "spawnPosition": {
               "x": 15,
-              "y": 9,
+              "y": 8,
               "z": -5
             },
             "spawnRotation": {
@@ -588,7 +626,7 @@
           }
         },
         {
-          "name": "EE_visible",
+          "name": "visible",
           "props": true
         }
       ],
@@ -599,11 +637,11 @@
     "2d7f9f97-20a0-40e8-a504-682f650af501": {
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": -60,
-              "y": 3,
+              "y": 2,
               "z": 0
             },
             "rotation": {
@@ -620,14 +658,33 @@
           }
         },
         {
-          "name": "EE_shadow",
+          "name": "shadow",
           "props": {
             "cast": true,
             "receive": true
           }
         },
         {
-          "name": "EE_portal",
+          "name": "collider",
+          "props": {
+            "bodyType": 1,
+            "shapeType": 1,
+            "isTrigger": true,
+            "removeMesh": true,
+            "collisionLayer": 8,
+            "collisionMask": 2,
+            "restitution": 0,
+            "triggers": [
+              {
+                "onEnter": "teleport",
+                "onExit": null,
+                "target": ""
+              }
+            ]
+          }
+        },
+        {
+          "name": "portal",
           "props": {
             "location": "",
             "linkedPortalId": "dd1eafe4-dc87-4353-b3ae-567d4f81c032",
@@ -637,7 +694,7 @@
             "previewImageURL": "__$project$__/default-project/sky-station-Portal--%20Sky%20Station%20Exterior.ktx2",
             "spawnPosition": {
               "x": -60,
-              "y": 3,
+              "y": 2,
               "z": 0
             },
             "spawnRotation": {
@@ -649,7 +706,7 @@
           }
         },
         {
-          "name": "EE_visible",
+          "name": "visible",
           "props": true
         }
       ],
@@ -661,7 +718,7 @@
       "name": "Directional Light",
       "components": [
         {
-          "name": "EE_transform",
+          "name": "transform",
           "props": {
             "position": {
               "x": 36,
@@ -682,7 +739,7 @@
           }
         },
         {
-          "name": "EE_directional_light",
+          "name": "directional-light",
           "props": {
             "color": 16777215,
             "intensity": 1,
@@ -694,7 +751,7 @@
           }
         },
         {
-          "name": "EE_visible",
+          "name": "visible",
           "props": true
         }
       ],

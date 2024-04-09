@@ -360,7 +360,7 @@ const getAbsolutePath = (url) => (isAbsolutePath(url) ? url : getState(EngineSta
 
 export type LoadingArgs = {
   ignoreDisposeGeometry?: boolean
-  forceAssetType?: AssetType | null
+  forceAssetType?: AssetType
   assetRoot?: Entity
 }
 

@@ -23,23 +23,18 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import {
-  Entity,
-  defineQuery,
-  defineSystem,
-  getComponent,
-  getOptionalComponent,
-  hasComponent
-} from '@etherealengine/ecs'
+import { Entity, defineQuery, defineSystem, getComponent } from '@etherealengine/ecs'
 import { ECSState } from '@etherealengine/ecs/src/ECSState'
 import { getState } from '@etherealengine/hyperflux'
-import { Matrix4, Quaternion, Vector3 } from 'three'
+import { Not } from 'bitecs'
 import { TransformComponent, TransformSystem } from '../../SpatialModule'
 import { V_000 } from '../../common/constants/MathConstants'
-import { EntityTreeComponent } from '../../transform/components/EntityTree'
-import { computeTransformMatrix, isDirty } from '../../transform/systems/TransformSystem'
-import { ColliderComponent } from '../components/ColliderComponent'
-import { RigidBodyComponent } from '../components/RigidBodyComponent'
+import { isDirty } from '../../transform/systems/TransformSystem'
+import {
+  RigidBodyComponent,
+  RigidBodyDynamicTagComponent,
+  RigidBodyFixedTagComponent
+} from '../components/RigidBodyComponent'
 
 export const teleportRigidbody = (entity: Entity) => {
   const transform = getComponent(entity, TransformComponent)
@@ -54,11 +49,6 @@ export const teleportRigidbody = (entity: Entity) => {
   rigidBody.previousRotation.copy(transform.rotation)
   rigidBody.rotation.copy(transform.rotation)
 }
-
-const position = new Vector3()
-const rotation = new Quaternion()
-const scale = new Vector3()
-const mat4 = new Matrix4()
 
 export const lerpTransformFromRigidbody = (entity: Entity, alpha: number) => {
   /*
@@ -82,107 +72,63 @@ export const lerpTransformFromRigidbody = (entity: Entity, alpha: number) => {
   const rotationZ = RigidBodyComponent.rotation.z[entity]
   const rotationW = RigidBodyComponent.rotation.w[entity]
 
-  position.x = positionX * alpha + previousPositionX * (1 - alpha)
-  position.y = positionY * alpha + previousPositionY * (1 - alpha)
-  position.z = positionZ * alpha + previousPositionZ * (1 - alpha)
-  rotation.x = rotationX * alpha + previousRotationX * (1 - alpha)
-  rotation.y = rotationY * alpha + previousRotationY * (1 - alpha)
-  rotation.z = rotationZ * alpha + previousRotationZ * (1 - alpha)
-  rotation.w = rotationW * alpha + previousRotationW * (1 - alpha)
+  TransformComponent.position.x[entity] = positionX * alpha + previousPositionX * (1 - alpha)
+  TransformComponent.position.y[entity] = positionY * alpha + previousPositionY * (1 - alpha)
+  TransformComponent.position.z[entity] = positionZ * alpha + previousPositionZ * (1 - alpha)
+  TransformComponent.rotation.x[entity] = rotationX * alpha + previousRotationX * (1 - alpha)
+  TransformComponent.rotation.y[entity] = rotationY * alpha + previousRotationY * (1 - alpha)
+  TransformComponent.rotation.z[entity] = rotationZ * alpha + previousRotationZ * (1 - alpha)
+  TransformComponent.rotation.w[entity] = rotationW * alpha + previousRotationW * (1 - alpha)
 
-  const transform = getComponent(entity, TransformComponent)
-
-  const parentEntity = getOptionalComponent(entity, EntityTreeComponent)?.parentEntity
-  if (parentEntity) {
-    // todo: figure out proper scale support
-    const scale = getComponent(entity, TransformComponent).scale
-    // if the entity has a parent, we need to use the world space
-    transform.matrixWorld.compose(position, rotation, scale)
-
-    TransformComponent.dirtyTransforms[entity] = false
-
-    for (const child of getComponent(entity, EntityTreeComponent).children)
-      TransformComponent.dirtyTransforms[child] = true
-  } else {
-    // otherwise, we can use the local space (for things like avatars)
-    transform.position.copy(position)
-    transform.rotation.copy(rotation)
-  }
+  TransformComponent.dirtyTransforms[entity] = true
 }
 
 export const copyTransformToRigidBody = (entity: Entity) => {
-  const transform = getComponent(entity, TransformComponent)
-  const parentEntity = getOptionalComponent(entity, EntityTreeComponent)?.parentEntity
-  if (parentEntity) {
-    // if the entity has a parent, we need to use the world space
-    transform.matrixWorld.decompose(position, rotation, scale)
-  } else {
-    // otherwise, we can use the local space (for things like avatars)
-    position.copy(transform.position)
-    rotation.copy(transform.rotation)
-  }
-
   RigidBodyComponent.position.x[entity] =
     RigidBodyComponent.previousPosition.x[entity] =
     RigidBodyComponent.targetKinematicPosition.x[entity] =
-      position.x
+      TransformComponent.position.x[entity]
   RigidBodyComponent.position.y[entity] =
     RigidBodyComponent.previousPosition.y[entity] =
     RigidBodyComponent.targetKinematicPosition.y[entity] =
-      position.y
+      TransformComponent.position.y[entity]
   RigidBodyComponent.position.z[entity] =
     RigidBodyComponent.previousPosition.z[entity] =
     RigidBodyComponent.targetKinematicPosition.z[entity] =
-      position.z
+      TransformComponent.position.z[entity]
   RigidBodyComponent.rotation.x[entity] =
     RigidBodyComponent.previousRotation.x[entity] =
     RigidBodyComponent.targetKinematicRotation.x[entity] =
-      rotation.x
+      TransformComponent.rotation.x[entity]
   RigidBodyComponent.rotation.y[entity] =
     RigidBodyComponent.previousRotation.y[entity] =
     RigidBodyComponent.targetKinematicRotation.y[entity] =
-      rotation.y
+      TransformComponent.rotation.y[entity]
   RigidBodyComponent.rotation.z[entity] =
     RigidBodyComponent.previousRotation.z[entity] =
     RigidBodyComponent.targetKinematicRotation.z[entity] =
-      rotation.z
+      TransformComponent.rotation.z[entity]
   RigidBodyComponent.rotation.w[entity] =
     RigidBodyComponent.previousRotation.w[entity] =
     RigidBodyComponent.targetKinematicRotation.w[entity] =
-      rotation.w
-
+      TransformComponent.rotation.w[entity]
   const rigidbody = getComponent(entity, RigidBodyComponent)
-  rigidbody.body.setTranslation(rigidbody.position, false)
-  rigidbody.body.setRotation(rigidbody.rotation, false)
-  rigidbody.body.setLinvel(V_000, false)
-  rigidbody.body.setAngvel(V_000, false)
-
-  TransformComponent.dirtyTransforms[entity] = false
-
-  if (hasComponent(entity, EntityTreeComponent))
-    for (const child of getComponent(entity, EntityTreeComponent).children)
-      TransformComponent.dirtyTransforms[child] = true
-}
-
-const copyTransformToCollider = (entity: Entity) => {
-  const collider = getComponent(entity, ColliderComponent).collider
-  if (!collider) return
-
-  const transform = getComponent(entity, TransformComponent)
-
-  computeTransformMatrix(entity)
-
-  mat4.copy(transform.matrixWorld).decompose(position, rotation, scale)
-
-  collider.setTranslation(position)
-  collider.setRotation(rotation)
+  rigidbody.body.setTranslation(rigidbody.position, true)
+  rigidbody.body.setRotation(rigidbody.rotation, true)
+  rigidbody.body.setLinvel({ x: 0, y: 0, z: 0 }, true)
+  rigidbody.body.setAngvel({ x: 0, y: 0, z: 0 }, true)
 }
 
 const rigidbodyQuery = defineQuery([TransformComponent, RigidBodyComponent])
-const colliderQuery = defineQuery([TransformComponent, ColliderComponent])
+const kinematicRigidbodyQuery = defineQuery([
+  TransformComponent,
+  RigidBodyComponent,
+  Not(RigidBodyFixedTagComponent),
+  Not(RigidBodyDynamicTagComponent)
+])
 
 const filterAwakeCleanRigidbodies = (entity: Entity) =>
-  !isDirty(entity) && !getComponent(entity, RigidBodyComponent).body.isSleeping()
+  !getComponent(entity, RigidBodyComponent).body.isSleeping() && !isDirty(entity)
 
 export const execute = () => {
   const ecsState = getState(ECSState)
@@ -191,20 +137,17 @@ export const execute = () => {
    * Update entity transforms
    */
   const allRigidbodyEntities = rigidbodyQuery()
-  const dirtyRigidbodyEntities = allRigidbodyEntities.filter(isDirty)
-  const dirtyColliderEntities = colliderQuery().filter(isDirty)
+  const kinematicRigidbodyEntities = kinematicRigidbodyQuery()
+  const awakeCleanRigidbodyEntities = allRigidbodyEntities.filter(filterAwakeCleanRigidbodies)
+  const dirtyKinematicRigidbodyEntities = kinematicRigidbodyEntities.filter(isDirty)
+  // const dirtyRigidbodyEntities = allRigidbodyEntities.filter(isDirty)
 
   // if rigidbody transforms have been dirtied, teleport the rigidbody to the transform
-  for (const entity of dirtyRigidbodyEntities) copyTransformToRigidBody(entity)
-
-  // if collider transforms have been dirtied, update them
-  for (const entity of dirtyColliderEntities) copyTransformToCollider(entity)
+  for (const entity of dirtyKinematicRigidbodyEntities) copyTransformToRigidBody(entity)
 
   // lerp awake clean rigidbody entities (and make their transforms dirty)
   const simulationRemainder = ecsState.frameTime - ecsState.simulationTime
   const alpha = Math.min(simulationRemainder / ecsState.simulationTimestep, 1)
-
-  const awakeCleanRigidbodyEntities = allRigidbodyEntities.filter(filterAwakeCleanRigidbodies)
   for (const entity of awakeCleanRigidbodyEntities) lerpTransformFromRigidbody(entity, alpha)
 }
 

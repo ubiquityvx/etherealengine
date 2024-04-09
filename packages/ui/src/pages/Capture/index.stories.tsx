@@ -53,7 +53,10 @@ import 'tailwindcss/tailwind.css'
 const initializeEngineForRecorder = async () => {
   // const projects = API.instance.client.service(projectsPath).find()
   // await loadEngineInjection(await projects)
-  getMutableState(SceneState).sceneLoaded.set(true)
+  getMutableState(SceneState).merge({
+    sceneLoading: false,
+    sceneLoaded: true
+  })
 }
 
 const argTypes = {}

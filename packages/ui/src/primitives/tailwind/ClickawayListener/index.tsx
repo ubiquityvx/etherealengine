@@ -24,7 +24,7 @@ Ethereal Engine. All Rights Reserved.
 */
 
 import { PopoverState } from '@etherealengine/client-core/src/common/services/PopoverState'
-import { useHookstate } from '@etherealengine/hyperflux'
+import { getMutableState, useHookstate } from '@etherealengine/hyperflux'
 import React from 'react'
 
 // todo move this to core engine
@@ -35,7 +35,7 @@ const ClickawayListener = (props: { children: JSX.Element }) => {
       className="fixed inset-0 bg-gray-800 bg-opacity-50"
       onClick={() => {
         if (childOver.value) return
-        PopoverState.hidePopupover()
+        getMutableState(PopoverState).element.set(null)
       }}
     >
       <div

@@ -44,12 +44,13 @@ import { CollisionComponent } from '../components/CollisionComponent'
 import {
   RigidBodyComponent,
   RigidBodyFixedTagComponent,
-  RigidBodyKinematicTagComponent
+  RigidBodyKinematicPositionBasedTagComponent,
+  RigidBodyKinematicVelocityBasedTagComponent
 } from '../components/RigidBodyComponent'
 import { PhysicsState } from '../state/PhysicsState'
 import { ColliderHitEvent, CollisionEvents } from '../types/PhysicsTypes'
 
-export function smoothKinematicBody(entity: Entity, dt: number, substep: number) {
+export function smoothPositionBasedKinematicBody(entity: Entity, dt: number, substep: number) {
   const rigidbodyComponent = getComponent(entity, RigidBodyComponent)
   if (rigidbodyComponent.targetKinematicLerpMultiplier === 0) {
     /** deterministic linear interpolation between substeps */
@@ -72,10 +73,43 @@ export function smoothKinematicBody(entity: Entity, dt: number, substep: number)
   rigidbodyComponent.body.setNextKinematicRotation(rigidbodyComponent.rotation)
 }
 
+export function smoothVelocityBasedKinematicBody(entity: Entity, dt: number, substep: number) {
+  const rigidbodyComponent = getComponent(entity, RigidBodyComponent)
+  if (rigidbodyComponent.targetKinematicLerpMultiplier === 0) {
+    rigidbodyComponent.position.lerpVectors(
+      rigidbodyComponent.previousPosition,
+      rigidbodyComponent.targetKinematicPosition,
+      substep
+    )
+    rigidbodyComponent.rotation.slerpQuaternions(
+      rigidbodyComponent.previousRotation,
+      rigidbodyComponent.targetKinematicRotation,
+      substep
+    )
+  } else {
+    const alpha = smootheLerpAlpha(rigidbodyComponent.targetKinematicLerpMultiplier, dt)
+    rigidbodyComponent.position.lerp(rigidbodyComponent.targetKinematicPosition, alpha)
+    rigidbodyComponent.rotation.slerp(rigidbodyComponent.targetKinematicRotation, alpha)
+  }
+  if (!rigidbodyComponent.body) return
+  /** @todo implement proper velocity based kinematic movement */
+  rigidbodyComponent.body.setNextKinematicTranslation(rigidbodyComponent.position)
+  rigidbodyComponent.body.setNextKinematicRotation(rigidbodyComponent.rotation)
+}
+
 const allRigidBodyQuery = defineQuery([RigidBodyComponent, Not(RigidBodyFixedTagComponent)])
 const collisionQuery = defineQuery([CollisionComponent])
 
-const kinematicQuery = defineQuery([RigidBodyComponent, RigidBodyKinematicTagComponent, TransformComponent])
+const kinematicPositionBodyQuery = defineQuery([
+  RigidBodyComponent,
+  RigidBodyKinematicPositionBasedTagComponent,
+  TransformComponent
+])
+const kinematicVelocityBodyQuery = defineQuery([
+  RigidBodyComponent,
+  RigidBodyKinematicVelocityBasedTagComponent,
+  TransformComponent
+])
 
 let drainCollisions: ReturnType<typeof Physics.drainCollisionEventQueue>
 let drainContacts: ReturnType<typeof Physics.drainContactEventQueue>
@@ -120,11 +154,13 @@ const execute = () => {
   physicsWorld.timestep = timestep
   // const smoothnessMultiplier = 50
   // const smoothAlpha = smoothnessMultiplier * timestep
-  const kinematicEntities = kinematicQuery()
+  const kinematicPositionEntities = kinematicPositionBodyQuery()
+  const kinematicVelocityEntities = kinematicVelocityBodyQuery()
   for (let i = 0; i < physicsSubsteps; i++) {
     // smooth kinematic pose changes
     const substep = (i + 1) / physicsSubsteps
-    for (const entity of kinematicEntities) smoothKinematicBody(entity, timestep, substep)
+    for (const entity of kinematicPositionEntities) smoothPositionBasedKinematicBody(entity, timestep, substep)
+    for (const entity of kinematicVelocityEntities) smoothVelocityBasedKinematicBody(entity, timestep, substep)
     physicsWorld.step(physicsCollisionEventQueue)
     physicsCollisionEventQueue.drainCollisionEvents(drainCollisions)
     physicsCollisionEventQueue.drainContactForceEvents(drainContacts)

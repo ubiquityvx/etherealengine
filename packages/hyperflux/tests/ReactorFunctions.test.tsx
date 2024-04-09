@@ -26,7 +26,7 @@ Ethereal Engine. All Rights Reserved.
 import { act, render } from '@testing-library/react'
 import assert from 'assert'
 import React, { useEffect, useLayoutEffect } from 'react'
-import { ReactorReconciler, createHyperStore, disposeStore, hookstate, startReactor, useHookstate } from '..'
+import { createHyperStore, disposeStore, hookstate, startReactor, useHookstate } from '..'
 
 describe('ReactorFunctions', () => {
   beforeEach(() => {
@@ -62,14 +62,20 @@ describe('ReactorFunctions', () => {
       return null
     })
 
-    assert.equal(renderCount, 1) // rendered
-    assert.equal(layoutEffectCount, 1) // layout effect run
-    assert.equal(effectCount, 1) // async effect did not run
+    assert.equal(renderCount, 0) // before render
+    assert.equal(layoutEffectCount, 0) // before layout effect run
+    assert.equal(effectCount, 0) // before effect run
+
+    await reactorRoot.promise
 
     // empty tag to allow scheduler to render
     const tag = <></>
 
     const { rerender, unmount } = render(tag)
+
+    assert.equal(renderCount, 1) // rendered
+    assert.equal(layoutEffectCount, 1) // layout effect run
+    assert.equal(effectCount, 0) // async effect did not run
 
     await act(() => rerender(tag))
 
@@ -110,11 +116,13 @@ describe('ReactorFunctions', () => {
       return null
     })
 
+    await reactorRoot.promise
+
     assert.equal(renderCount, 1)
     assert.equal(layoutEffectCount, 1)
     assert.equal(effectCount, 1)
 
-    ReactorReconciler.flushSync(() => reactorRoot.run())
+    reactorRoot.run(true)
 
     assert.equal(renderCount, 2)
     assert.equal(layoutEffectCount, 1)
@@ -122,11 +130,13 @@ describe('ReactorFunctions', () => {
 
     effectTrigger.set(1)
 
-    ReactorReconciler.flushSync(() => reactorRoot.run())
+    reactorRoot.run(true)
 
     assert.equal(renderCount, 3)
     assert.equal(layoutEffectCount, 2)
     assert.equal(effectCount, 2)
+
+    await reactorRoot.stop()
   })
 
   it('should not update unrelated reactor when forcing run synchronously', async () => {
@@ -174,6 +184,9 @@ describe('ReactorFunctions', () => {
       return null
     })
 
+    await reactorRoot.promise
+    await reactorRoot2.promise
+
     assert.equal(renderCount, 1)
     assert.equal(layoutEffectCount, 1)
     assert.equal(effectCount, 1)
@@ -181,7 +194,7 @@ describe('ReactorFunctions', () => {
     assert.equal(layoutEffect2Count, 1)
     assert.equal(effect2Count, 1)
 
-    ReactorReconciler.flushSync(() => reactorRoot.run())
+    reactorRoot.run(true)
 
     assert.equal(renderCount, 2)
     assert.equal(layoutEffectCount, 1)
@@ -192,7 +205,7 @@ describe('ReactorFunctions', () => {
 
     effectTrigger.set(1)
 
-    ReactorReconciler.flushSync(() => reactorRoot.run())
+    reactorRoot.run(true)
 
     assert.equal(renderCount, 3)
     assert.equal(layoutEffectCount, 2)
@@ -201,8 +214,8 @@ describe('ReactorFunctions', () => {
     assert.equal(layoutEffect2Count, 1)
     assert.equal(effect2Count, 1)
 
-    reactorRoot.stop()
-    reactorRoot2.stop()
+    await reactorRoot.stop()
+    await reactorRoot2.stop()
   })
 
   it('should be able to run nested effects synchronously', async () => {
@@ -241,6 +254,8 @@ describe('ReactorFunctions', () => {
       )
     })
 
+    await reactorRoot.promise
+
     assert.equal(renderCount, 1)
     assert.equal(layoutEffectCount, 0)
     assert.equal(nestedRenderCount, 0)
@@ -248,7 +263,7 @@ describe('ReactorFunctions', () => {
 
     effectTrigger.set({ a: 0 })
 
-    ReactorReconciler.flushSync(() => reactorRoot.run())
+    reactorRoot.run(true)
 
     assert.equal(renderCount, 2)
     assert.equal(layoutEffectCount, 1)
@@ -257,7 +272,7 @@ describe('ReactorFunctions', () => {
 
     effectTrigger.a.set(1)
 
-    ReactorReconciler.flushSync(() => reactorRoot.run())
+    reactorRoot.run(true)
 
     assert.equal(renderCount, 3)
     assert.equal(layoutEffectCount, 2)
@@ -266,7 +281,7 @@ describe('ReactorFunctions', () => {
 
     effectTrigger.b.set(0)
 
-    ReactorReconciler.flushSync(() => reactorRoot.run())
+    reactorRoot.run(true)
 
     assert.equal(renderCount, 4)
     assert.equal(layoutEffectCount, 3)

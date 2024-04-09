@@ -174,7 +174,7 @@ const LoremIpsum =
  */
 export const TextComponent = defineComponent({
   name: 'TextComponent',
-  jsonID: 'EE_text_spatial',
+  jsonID: 'Text_Spatial',
 
   onInit: (entity) => {
     return {

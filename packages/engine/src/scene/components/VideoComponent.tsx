@@ -76,7 +76,7 @@ class VideoTexturePriorityQueue extends Texture {
 
 export const VideoComponent = defineComponent({
   name: 'EE_video',
-  jsonID: 'EE_video',
+  jsonID: 'video',
 
   onInit: (entity) => {
     const videoMesh = new Mesh(PLANE_GEO.clone(), new MeshBasicMaterial())
@@ -132,6 +132,8 @@ function VideoReactor() {
   const visible = useOptionalComponent(entity, VisibleComponent)
   const mediaUUID = video.mediaUUID.value
   const mediaEntity = UUIDComponent.getEntityByUUID(mediaUUID) || entity
+
+  console.log({ mediaEntity })
 
   useEffect(() => {
     const videoEntity = createEntity()

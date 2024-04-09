@@ -43,7 +43,7 @@ import { addError, removeError } from '../functions/ErrorFunctions'
 export const SkyboxComponent = defineComponent({
   name: 'SkyboxComponent',
 
-  jsonID: 'EE_skybox',
+  jsonID: 'skybox',
 
   onInit: (entity) => {
     return {

@@ -32,8 +32,7 @@ import {
   StaticResourceFiltersType,
   StaticResourceType,
   staticResourceFiltersPath,
-  staticResourcePath,
-  uploadAssetPath
+  staticResourcePath
 } from '@etherealengine/common/src/schema.type.module'
 import { Paginated } from '@feathersjs/feathers'
 import { NotificationService } from '../../common/services/NotificationService'
@@ -62,7 +61,7 @@ export const AdminResourceState = defineState({
 export const ResourceService = {
   createOrUpdateResource: async (resource: AdminAssetUploadArgumentsType, resourceBlob: File) => {
     try {
-      await uploadToFeathersService(uploadAssetPath, [resourceBlob], {
+      await uploadToFeathersService('upload-asset', [resourceBlob], {
         type: 'admin-file-upload',
         args: resource
       })

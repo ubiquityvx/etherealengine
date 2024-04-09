@@ -65,7 +65,8 @@ import {
 import { isMobileXRHeadset } from '@etherealengine/spatial/src/xr/XRState'
 import { registerMaterial, unregisterMaterial } from '../../scene/materials/functions/MaterialLibraryFunctions'
 import { ModelComponent, useMeshOrModel } from '../components/ModelComponent'
-import { SceneComponent } from '../components/SceneComponent'
+import { SceneObjectComponent } from '../components/SceneObjectComponent'
+import { SourceComponent } from '../components/SourceComponent'
 import { UpdatableCallback, UpdatableComponent } from '../components/UpdatableComponent'
 import { getModelSceneID } from '../functions/loaders/ModelFunctions'
 
@@ -150,7 +151,7 @@ function SceneObjectReactor(props: { entity: Entity; obj: Object3D }) {
   useEffect(() => {
     const source = hasComponent(entity, ModelComponent)
       ? getModelSceneID(entity)
-      : getOptionalComponent(entity, SceneComponent)
+      : getOptionalComponent(entity, SourceComponent)
     return () => {
       if (obj.isProxified) {
         disposeObject3D(obj)
@@ -158,7 +159,7 @@ function SceneObjectReactor(props: { entity: Entity; obj: Object3D }) {
         iterateObject3D(
           obj,
           disposeObject3D,
-          (obj: Object3D) => getOptionalComponent(obj.entity, SceneComponent) === source
+          (obj: Object3D) => getOptionalComponent(obj.entity, SourceComponent) === source
         )
       }
     }
@@ -212,7 +213,7 @@ const SceneObjectEntityReactor = (props: { entity: Entity }) => {
 }
 
 const reactor = () => {
-  const sceneObjectEntities = useQuery([SceneComponent])
+  const sceneObjectEntities = useQuery([SceneObjectComponent])
 
   return (
     <>

@@ -28,6 +28,7 @@ import {
   AnimationAction,
   AnimationActionLoopStyles,
   AnimationBlendMode,
+  AnimationMixer,
   LoopRepeat,
   NormalAnimationBlendMode
 } from 'three'
@@ -37,6 +38,7 @@ import {
   defineComponent,
   getComponent,
   hasComponent,
+  setComponent,
   useComponent,
   useOptionalComponent
 } from '@etherealengine/ecs/src/ComponentFunctions'
@@ -51,7 +53,7 @@ import { AnimationComponent } from './AnimationComponent'
 
 export const LoopAnimationComponent = defineComponent({
   name: 'LoopAnimationComponent',
-  jsonID: 'EE_loop_animation',
+  jsonID: 'loop-animation',
 
   onInit: (entity) => {
     return {
@@ -116,8 +118,8 @@ export const LoopAnimationComponent = defineComponent({
     const loopAnimationComponent = useComponent(entity, LoopAnimationComponent)
     const modelComponent = useOptionalComponent(entity, ModelComponent)
     const animComponent = useOptionalComponent(entity, AnimationComponent)
-
     const lastAnimationPack = useHookstate('')
+
     useEffect(() => {
       if (!animComponent?.animations?.value) return
       const clip = animComponent.animations.value[loopAnimationComponent.activeClipIndex.value]
@@ -139,7 +141,7 @@ export const LoopAnimationComponent = defineComponent({
       } catch (e) {
         console.warn('Failed to bind animation in LoopAnimationComponent', entity, e)
       }
-    }, [loopAnimationComponent.activeClipIndex, modelComponent?.asset, animComponent?.animations])
+    }, [animComponent?.animations, loopAnimationComponent.activeClipIndex, modelComponent?.asset])
 
     useEffect(() => {
       if (loopAnimationComponent._action.value?.isRunning()) {
@@ -204,6 +206,12 @@ export const LoopAnimationComponent = defineComponent({
       const asset = modelComponent?.asset.get(NO_PROXY) ?? null
       if (!asset?.scene) return
       const model = getComponent(entity, ModelComponent)
+
+      if (!hasComponent(entity, AnimationComponent)) {
+        setComponent(entity, AnimationComponent, {
+          mixer: new AnimationMixer(model.asset!.scene)
+        })
+      }
     }, [modelComponent?.asset])
 
     const [gltf, unload] = useGLTF(loopAnimationComponent.animationPack.value, entity)

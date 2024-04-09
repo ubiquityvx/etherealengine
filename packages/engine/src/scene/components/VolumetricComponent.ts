@@ -82,7 +82,7 @@ export function handleAutoplay(
 
 export const VolumetricComponent = defineComponent({
   name: 'Volumetric Component',
-  jsonID: 'EE_volumetric',
+  jsonID: 'volumetric',
   onInit: (entity) => {
     return {
       paths: [] as string[],

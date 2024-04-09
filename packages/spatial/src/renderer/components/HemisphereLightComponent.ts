@@ -33,7 +33,7 @@ import { addObjectToGroup, removeObjectFromGroup } from './GroupComponent'
 
 export const HemisphereLightComponent = defineComponent({
   name: 'HemisphereLightComponent',
-  jsonID: 'EE_hemisphere_light',
+  jsonID: 'hemisphere-light',
 
   onInit: (entity) => {
     const light = new HemisphereLight()
@@ -68,10 +68,9 @@ export const HemisphereLightComponent = defineComponent({
     const entity = useEntityContext()
     const light = useComponent(entity, HemisphereLightComponent)
     useEffect(() => {
-      const lightObj = light.light.value
-      addObjectToGroup(entity, lightObj)
+      addObjectToGroup(entity, light.light.value)
       return () => {
-        removeObjectFromGroup(entity, lightObj)
+        removeObjectFromGroup(entity, light.light.value)
       }
     }, [])
     useEffect(() => {

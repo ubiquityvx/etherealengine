@@ -35,7 +35,6 @@ import Tooltip from '@etherealengine/ui/src/primitives/mui/Tooltip'
 
 import { ProjectType, projectPath } from '@etherealengine/common/src/schema.type.module'
 import { useFind } from '@etherealengine/spatial/src/common/functions/FeathersHooks'
-import InputSwitch from '../../../common/components/InputSwitch'
 import { NotificationService } from '../../../common/services/NotificationService'
 import { ProjectService } from '../../../common/services/ProjectService'
 import { useUserHasAccessHook } from '../../../user/userHasAccess'
@@ -146,11 +145,6 @@ const ProjectTable = ({ className }: Props) => {
     }
   }
 
-  const handleEnabledChange = async (project: ProjectType) => {
-    await ProjectService.setEnabled(project.id, !project.enabled)
-    projectsQuery.refetch()
-  }
-
   const openPushConfirmation = (row) => {
     setProject(row)
 
@@ -249,12 +243,7 @@ const ProjectTable = ({ className }: Props) => {
       ),
       enabled: (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <InputSwitch
-            name="enabled"
-            disabled={el.name === 'default-project'}
-            checked={el.enabled}
-            onChange={() => handleEnabledChange(el)}
-          />
+          <span>{el.enabled ? t('common:enabled') : t('common:disabled')}</span>
         </Box>
       ),
       commitSHA: (

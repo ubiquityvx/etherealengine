@@ -46,7 +46,6 @@ import checkPositionIsValid from '@etherealengine/spatial/src/common/functions/c
 import { NetworkObjectAuthorityTag } from '@etherealengine/spatial/src/networking/components/NetworkObjectComponent'
 import { EntityNetworkState } from '@etherealengine/spatial/src/networking/state/EntityNetworkState'
 import { Physics } from '@etherealengine/spatial/src/physics/classes/Physics'
-import { ColliderComponent } from '@etherealengine/spatial/src/physics/components/ColliderComponent'
 import { RigidBodyComponent } from '@etherealengine/spatial/src/physics/components/RigidBodyComponent'
 import { CollisionGroups } from '@etherealengine/spatial/src/physics/enums/CollisionGroups'
 import { PhysicsState } from '@etherealengine/spatial/src/physics/state/PhysicsState'
@@ -56,7 +55,7 @@ import { computeAndUpdateWorldOrigin, updateWorldOrigin } from '@etherealengine/
 import { XRControlsState, XRState } from '@etherealengine/spatial/src/xr/XRState'
 import { preloadedAnimations } from '../animation/Util'
 import { AvatarComponent } from '../components/AvatarComponent'
-import { AvatarColliderComponent, AvatarControllerComponent } from '../components/AvatarControllerComponent'
+import { AvatarControllerComponent } from '../components/AvatarControllerComponent'
 import { AvatarHeadDecapComponent } from '../components/AvatarIKComponents'
 import { AvatarMovementSettingsState } from '../state/AvatarMovementSettingsState'
 import { AvatarNetworkAction } from '../state/AvatarNetworkActions'
@@ -90,11 +89,6 @@ export function moveAvatar(entity: Entity, additionalMovement?: Vector3) {
   const xrFrame = getState(XRState).xrFrame
 
   if (!entity || (!xrFrame && !additionalMovement)) return
-
-  const colliderEntity = getComponent(entity, AvatarColliderComponent).colliderEntity
-  const bodyCollider = getComponent(colliderEntity, ColliderComponent)?.collider
-  /** @todo remove this check when physics API is fleshed out */
-  if (!bodyCollider) return
 
   const xrState = getState(XRState)
   const rigidbody = getComponent(entity, RigidBodyComponent)
@@ -138,10 +132,10 @@ export function moveAvatar(entity: Entity, additionalMovement?: Vector3) {
 
   if (additionalMovement) desiredMovement.add(additionalMovement)
 
-  const avatarCollisionGroups = bodyCollider.collisionGroups() & ~CollisionGroups.Trigger
+  const avatarCollisionGroups = controller.bodyCollider.collisionGroups() & ~CollisionGroups.Trigger
 
   controller.controller.computeColliderMovement(
-    bodyCollider,
+    controller.bodyCollider,
     desiredMovement,
     QueryFilterFlags.EXCLUDE_SENSORS,
     avatarCollisionGroups

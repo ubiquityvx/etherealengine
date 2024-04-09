@@ -42,7 +42,6 @@ import { BufferGeometry, InstancedMesh, LineBasicMaterial, Mesh, Object3D, Skinn
 import { MeshBVHHelper, acceleratedRaycast, computeBoundsTree, disposeBoundsTree } from 'three-mesh-bvh'
 import { generateMeshBVH } from '../functions/bvhWorkerPool'
 import { ModelComponent } from './ModelComponent'
-import { SceneComponent } from './SceneComponent'
 
 Mesh.prototype.raycast = acceleratedRaycast
 BufferGeometry.prototype['disposeBoundsTree'] = disposeBoundsTree
@@ -89,8 +88,7 @@ export const MeshBVHComponent = defineComponent({
     const debug = useHookstate(getMutableState(RendererState).physicsDebug)
     const visible = useOptionalComponent(entity, VisibleComponent)
     const model = useComponent(entity, ModelComponent)
-    const sceneID = useComponent(entity, SceneComponent)
-    const childEntities = useHookstate(SceneComponent.entitiesBySceneState[sceneID.value])
+    const childEntities = useHookstate(ModelComponent.entitiesInModelHierarchyState[entity])
     const abortControllerState = useHookstate(new AbortController())
 
     useEffect(() => {

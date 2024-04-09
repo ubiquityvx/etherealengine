@@ -33,7 +33,7 @@ import { EngineRenderer, PostProcessingSettingsState } from '@etherealengine/spa
 
 export const PostProcessingComponent = defineComponent({
   name: 'PostProcessingComponent',
-  jsonID: 'EE_postprocessing',
+  jsonID: 'postprocessing',
 
   onInit(entity): typeof PostProcessingSettingsState._TYPE {
     return typeof PostProcessingSettingsState.initial === 'function'

@@ -51,7 +51,6 @@ import { ColliderComponent } from '@etherealengine/spatial/src/physics/component
 import { RigidBodyComponent } from '@etherealengine/spatial/src/physics/components/RigidBodyComponent'
 import { TriggerComponent } from '@etherealengine/spatial/src/physics/components/TriggerComponent'
 import { CollisionGroups } from '@etherealengine/spatial/src/physics/enums/CollisionGroups'
-import { Shapes } from '@etherealengine/spatial/src/physics/types/PhysicsTypes'
 import { RendererState } from '@etherealengine/spatial/src/renderer/RendererState'
 import { addObjectToGroup, removeObjectFromGroup } from '@etherealengine/spatial/src/renderer/components/GroupComponent'
 import {
@@ -86,7 +85,7 @@ export const PortalState = defineState({
 
 export const PortalComponent = defineComponent({
   name: 'PortalComponent',
-  jsonID: 'EE_portal',
+  jsonID: 'portal',
 
   onInit: (entity) => {
     return {
@@ -163,7 +162,7 @@ export const PortalComponent = defineComponent({
       if (hasComponent(entity, RigidBodyComponent)) return
       setComponent(entity, RigidBodyComponent, { type: 'fixed' })
       setComponent(entity, ColliderComponent, {
-        shape: Shapes.Sphere,
+        shape: 'box',
         collisionLayer: CollisionGroups.Trigger,
         collisionMask: CollisionGroups.Avatars
       })
@@ -198,7 +197,6 @@ export const PortalComponent = defineComponent({
 
       return () => {
         removeEntity(helperEntity)
-        if (!hasComponent(entity, PortalComponent)) return
         portalComponent.helperEntity.set(none)
       }
     }, [debugEnabled])
@@ -206,8 +204,9 @@ export const PortalComponent = defineComponent({
     useEffect(() => {
       if (portalComponent.previewType.value !== PortalPreviewTypeSpherical) return
 
-      const portalMesh = new Mesh(new SphereGeometry(1, 32, 32), new MeshBasicMaterial({ side: BackSide }))
+      const portalMesh = new Mesh(new SphereGeometry(1.5, 32, 32), new MeshBasicMaterial({ side: BackSide }))
       enableObjectLayer(portalMesh, ObjectLayers.Camera, true)
+      portalMesh.geometry.translate(0, 1.5, 0)
       portalComponent.mesh.set(portalMesh)
       addObjectToGroup(entity, portalMesh)
 

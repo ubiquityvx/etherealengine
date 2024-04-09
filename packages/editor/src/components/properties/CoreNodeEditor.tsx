@@ -26,28 +26,19 @@ Ethereal Engine. All Rights Reserved.
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import {
-  getOptionalComponent,
-  hasComponent,
-  removeComponent,
-  setComponent,
-  useOptionalComponent
-} from '@etherealengine/ecs/src/ComponentFunctions'
+import { hasComponent, useOptionalComponent } from '@etherealengine/ecs/src/ComponentFunctions'
+import { SceneTagComponent } from '@etherealengine/engine/src/scene/components/SceneTagComponent'
 import { getMutableState, useHookstate } from '@etherealengine/hyperflux'
 import { VisibleComponent } from '@etherealengine/spatial/src/renderer/components/VisibleComponent'
 
 import { EntityUUID } from '@etherealengine/common/src/interfaces/EntityUUID'
 import { Entity } from '@etherealengine/ecs'
-import { ModelComponent } from '@etherealengine/engine/src/scene/components/ModelComponent'
-import { EntityTreeComponent } from '@etherealengine/spatial/src/transform/components/EntityTree'
 import LockIcon from '@mui/icons-material/Lock'
 import UnlockIcon from '@mui/icons-material/LockOpen'
 import { EditorControlFunctions } from '../../functions/EditorControlFunctions'
-import { exportRelativeGLTF } from '../../functions/exportGLTF'
 import { EditorState } from '../../services/EditorServices'
 import { SelectionState } from '../../services/SelectionServices'
 import BooleanInput from '../inputs/BooleanInput'
-import { PropertiesPanelButton } from '../inputs/Button'
 import InputGroup from '../inputs/InputGroup'
 import { PanelIcon } from '../layout/Panel'
 import { ConvertOldCollider } from './ConvertOldCollider'
@@ -70,12 +61,6 @@ const visibleInputGroupStyle = {
 export const CoreNodeEditor = (props: { entity: Entity }) => {
   const { t } = useTranslation()
   const editorState = useHookstate(getMutableState(EditorState))
-
-  const exportAsGLTF = () => {
-    setComponent(props.entity, ModelComponent)
-    exportRelativeGLTF(props.entity, editorState.projectName.value!, editorState.sceneName.value + '-scene.gltf')
-    removeComponent(props.entity, ModelComponent)
-  }
 
   useOptionalComponent(props.entity, VisibleComponent)
   const [locked, setLocked] = useState(editorState.lockPropertiesPanel.value !== '')
@@ -126,13 +111,9 @@ export const CoreNodeEditor = (props: { entity: Entity }) => {
       </div>
       <div style={nameInputGroupContainerStyle}>
         <NameInputGroup entity={props.entity} />
-        {!getOptionalComponent(props.entity, EntityTreeComponent)?.parentEntity ? (
+        <ConvertOldCollider entity={props.entity} />
+        {!hasComponent(props.entity, SceneTagComponent) && (
           <>
-            <PropertiesPanelButton onClick={exportAsGLTF}>Export as GLTF</PropertiesPanelButton>
-          </>
-        ) : (
-          <>
-            <ConvertOldCollider entity={props.entity} />
             <InputGroup
               name="Visible"
               label={t('editor:properties.lbl-visible')}
@@ -140,9 +121,9 @@ export const CoreNodeEditor = (props: { entity: Entity }) => {
             >
               <BooleanInput value={hasComponent(props.entity, VisibleComponent)} onChange={setVisible} />
             </InputGroup>
-            <TransformPropertyGroup entity={props.entity} />
           </>
         )}
+        <TransformPropertyGroup entity={props.entity} />
       </div>
     </div>
   )

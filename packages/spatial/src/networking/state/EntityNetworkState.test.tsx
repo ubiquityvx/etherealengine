@@ -29,7 +29,7 @@ import { EntityUUID } from '@etherealengine/common/src/interfaces/EntityUUID'
 import { NetworkId } from '@etherealengine/common/src/interfaces/NetworkId'
 import { PeerID } from '@etherealengine/common/src/interfaces/PeerID'
 import { UserID } from '@etherealengine/common/src/schema.type.module'
-import { ReactorReconciler, getMutableState } from '@etherealengine/hyperflux'
+import { getMutableState } from '@etherealengine/hyperflux'
 import { applyIncomingActions, dispatchAction } from '@etherealengine/hyperflux/functions/ActionFunctions'
 
 import { getComponent, hasComponent } from '@etherealengine/ecs/src/ComponentFunctions'
@@ -97,7 +97,7 @@ describe('EntityNetworkState', () => {
         })
       )
 
-      ReactorReconciler.flushSync(() => applyIncomingActions())
+      applyIncomingActions()
 
       const networkObjectQuery = defineQuery([NetworkObjectComponent])
       const networkObjectOwnedQuery = defineQuery([NetworkObjectOwnedTag])
@@ -141,8 +141,7 @@ describe('EntityNetworkState', () => {
           entityUUID: Engine.instance.peerID as any as EntityUUID
         })
       )
-
-      ReactorReconciler.flushSync(() => applyIncomingActions())
+      applyIncomingActions()
 
       const networkObjectQuery = defineQuery([NetworkObjectComponent])
       const networkObjectOwnedQuery = defineQuery([NetworkObjectOwnedTag])
@@ -189,8 +188,7 @@ describe('EntityNetworkState', () => {
           entityUUID: peerID3 as any as EntityUUID
         })
       )
-
-      ReactorReconciler.flushSync(() => applyIncomingActions())
+      applyIncomingActions()
 
       const networkObjectQuery = defineQuery([NetworkObjectComponent])
       const networkObjectOwnedQuery = defineQuery([NetworkObjectOwnedTag])
@@ -227,8 +225,7 @@ describe('EntityNetworkState', () => {
           entityUUID: Engine.instance.userID as string as EntityUUID
         })
       )
-
-      ReactorReconciler.flushSync(() => applyIncomingActions())
+      applyIncomingActions()
 
       const entity = UUIDComponent.getEntityByUUID(Engine.instance.userID as any as EntityUUID)
 
@@ -269,8 +266,7 @@ describe('EntityNetworkState', () => {
           entityUUID: peerID as any as EntityUUID
         })
       )
-
-      ReactorReconciler.flushSync(() => applyIncomingActions())
+      applyIncomingActions()
 
       const networkObjectQuery = defineQuery([NetworkObjectComponent])
       const networkObjectOwnedQuery = defineQuery([NetworkObjectOwnedTag])
@@ -294,8 +290,8 @@ describe('EntityNetworkState', () => {
         })
       )
 
-      ReactorReconciler.flushSync(() => applyIncomingActions())
-      ReactorReconciler.flushSync(() => applyIncomingActions())
+      applyIncomingActions()
+      applyIncomingActions()
 
       const networkObjectEntitiesAfter = networkObjectQuery()
       const networkObjectOwnedEntitiesAfter = networkObjectOwnedQuery()
@@ -340,7 +336,7 @@ describe('EntityNetworkState', () => {
       })
     )
 
-    ReactorReconciler.flushSync(() => applyIncomingActions())
+    applyIncomingActions()
 
     const networkObjectQuery = defineQuery([NetworkObjectComponent])
     const networkObjectOwnedQuery = defineQuery([NetworkObjectOwnedTag])
@@ -364,7 +360,7 @@ describe('EntityNetworkState', () => {
       })
     )
 
-    ReactorReconciler.flushSync(() => applyIncomingActions())
+    applyIncomingActions()
 
     const networkObjectEntitiesAfter = networkObjectQuery()
     const networkObjectOwnedEntitiesAfter = networkObjectOwnedQuery()
@@ -412,7 +408,7 @@ describe('EntityNetworkState', () => {
       )
     }
 
-    ReactorReconciler.flushSync(() => applyIncomingActions())
+    applyIncomingActions()
 
     const applyActionsEnd = performance.now()
     console.log('10000 entities apply action time:', applyActionsEnd - start)
@@ -435,7 +431,7 @@ describe('EntityNetworkState', () => {
       })
     )
 
-    ReactorReconciler.flushSync(() => applyIncomingActions())
+    applyIncomingActions()
 
     const runner2End = performance.now()
 

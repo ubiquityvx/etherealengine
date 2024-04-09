@@ -286,11 +286,7 @@ const AvatarDrawerContent = ({ open, mode, selectedAvatar, onClose }: Props) => 
       if (selectedAvatar?.id) {
         await AvatarService.patchAvatar(selectedAvatar, state.name.value, true, avatarFile, thumbnailFile)
       } else {
-        try {
-          await AvatarService.createAvatar(avatarFile, thumbnailFile, state.name.value, true)
-        } catch (error) {
-          NotificationService.dispatchNotify(error.message, { variant: 'error' })
-        }
+        await AvatarService.createAvatar(avatarFile, thumbnailFile, state.name.value, true)
       }
 
       onClose()

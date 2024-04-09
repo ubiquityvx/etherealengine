@@ -32,7 +32,6 @@ import {
   defineComponent,
   getComponent,
   getOptionalComponent,
-  hasComponent,
   setComponent,
   useComponent
 } from '@etherealengine/ecs/src/ComponentFunctions'
@@ -89,7 +88,6 @@ export const BoundingBoxComponent = defineComponent({
 
       return () => {
         removeEntity(helperEntity)
-        if (!hasComponent(entity, BoundingBoxComponent)) return
         boundingBox.helper.set(UndefinedEntity)
       }
     }, [debugEnabled])

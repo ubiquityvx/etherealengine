@@ -224,6 +224,8 @@ export const useLoadEngineWithScene = ({ spectate }: Props = {}) => {
 }
 
 export const useNetwork = (props: { online?: boolean }) => {
+  const sceneLoaded = useHookstate(getMutableState(SceneState).sceneLoaded)
+
   useEffect(() => {
     getMutableState(NetworkState).config.set({
       world: !!props.online,
@@ -236,7 +238,7 @@ export const useNetwork = (props: { online?: boolean }) => {
 
   /** Offline/local world network */
   useEffect(() => {
-    if (props.online) return
+    if (!sceneLoaded.value || props.online) return
 
     const userId = Engine.instance.userID
     const peerID = Engine.instance.peerID
@@ -267,5 +269,5 @@ export const useNetwork = (props: { online?: boolean }) => {
       removeNetwork(network)
       networkState.hostIds.world.set(none)
     }
-  }, [props.online])
+  }, [sceneLoaded.value, props.online])
 }

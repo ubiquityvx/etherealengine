@@ -31,7 +31,7 @@ module.exports = {
   content: [
     '../**/*.{ts,tsx}',
   ],
-  darkMode: ["class", '[data-theme="dark"]'],
+  darkMode: "class",
   important: true, // important in prod is must be
   theme: {
     extend: {
@@ -46,13 +46,7 @@ module.exports = {
         theme: {
           primary: "var(--bg-primary)",
           secondary: "var(--bg-secondary)",
-          highlight: "var(--bg-highlight)",
-          surfaceMain: "var(--bg-surface-main)"
-        }
-      },
-      borderColor: {
-        theme: {
-          primary: "var(--border-primary)"
+          highlight: "var(--bg-highlight)"
         }
       }
     }

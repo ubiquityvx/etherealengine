@@ -41,14 +41,9 @@ export interface ModalProps {
 
 export const ModalHeader = ({ title, onClose }: { closeIcon?: boolean; title?: string; onClose?: () => void }) => {
   return (
-    <div className="border-b-theme-primary relative flex items-center justify-center border-b px-6 py-5">
+    <div className="relative flex items-center justify-center border-b border-b-gray-200 p-5">
       {title && <Text>{title}</Text>}
-      <Button
-        variant="outline"
-        className="absolute right-0 border-0 dark:bg-transparent dark:text-[#A3A3A3]"
-        startIcon={<MdClose />}
-        onClick={onClose}
-      />
+      <Button variant="outline" className="absolute right-0 border-0" startIcon={<MdClose />} onClick={onClose} />
     </div>
   )
 }
@@ -56,7 +51,7 @@ export const ModalHeader = ({ title, onClose }: { closeIcon?: boolean; title?: s
 export const ModalFooter = ({ onCancel, onSubmit }: { onCancel?: () => void; onSubmit?: () => void }) => {
   const { t } = useTranslation()
   return (
-    <div className="border-t-theme-primary grid grid-flow-col border-t px-6 py-5">
+    <div className=" grid grid-flow-col border-t border-t-gray-200 px-6 py-5">
       <Button variant="outline" onClick={onCancel}>
         {t('common:components.cancel')}
       </Button>
@@ -74,8 +69,8 @@ const Modal = ({ title, onClose, onSubmit, hideFooter, children, className }: Mo
   return (
     <div className={twClassName}>
       <div className="bg-theme-primary relative rounded-lg shadow">
-        {onClose && <ModalHeader title={title} onClose={onClose} />}
-        <div className="w-full px-10 py-6">{children}</div>
+        <ModalHeader title={title} onClose={onClose} />
+        <div className="px-10 py-5">{children}</div>
         {!hideFooter && <ModalFooter onCancel={onClose} onSubmit={onSubmit} />}
       </div>
     </div>

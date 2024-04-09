@@ -5,10 +5,7 @@
     "select": "Select",
     "enter": "Enter",
     "processing": "Processing",
-    "retry": "Retry",
-    "close": "Close",
-    "submit": "Submit",
-    "search": "Search"
+    "retry": "Retry"
   },
   "tooltip": {
     "pressKey": "Press {{tip}} to {{message}}"

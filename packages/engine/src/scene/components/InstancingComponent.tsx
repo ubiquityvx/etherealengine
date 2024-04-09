@@ -28,8 +28,8 @@ import { InstancedBufferAttribute } from 'three'
 import { defineComponent } from '@etherealengine/ecs/src/ComponentFunctions'
 
 export const InstancingComponent = defineComponent({
-  name: 'InstancingComponent',
-  jsonID: 'EE_instancing',
+  name: 'EE_instancing',
+  jsonID: 'instancing',
   onInit: (entity) => ({
     instanceMatrix: new InstancedBufferAttribute(new Float32Array(16), 16)
   }),

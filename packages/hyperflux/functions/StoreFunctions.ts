@@ -29,7 +29,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { PeerID } from '@etherealengine/common/src/interfaces/PeerID'
 import { ActionQueueHandle, ActionQueueInstance, ResolvedActionType, Topic } from './ActionFunctions'
-import { ReactorReconciler, ReactorRoot } from './ReactorFunctions'
+import { ReactorRoot } from './ReactorFunctions'
 
 export type StringLiteral<T> = T extends string ? (string extends T ? never : T) : never
 export interface HyperStore {
@@ -145,10 +145,12 @@ export function createHyperStore(options: {
   return store
 }
 
-export const disposeStore = (store = HyperFlux.store) => {
+export const disposeStore = async (store = HyperFlux.store) => {
+  const activeReactors = [] as Promise<void>[]
   for (const reactor of store.activeReactors) {
-    ReactorReconciler.flushSync(() => reactor.stop())
+    activeReactors.push(reactor.stop())
   }
+  await Promise.all(activeReactors)
   /** @todo this causes errors in tests */
   // bitecs.deleteWorld(store)
 }

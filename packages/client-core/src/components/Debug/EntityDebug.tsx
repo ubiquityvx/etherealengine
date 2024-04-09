@@ -61,7 +61,7 @@ const renderEntityTreeRoots = () => {
   return Object.fromEntries(
     Object.values(getState(SceneState).scenes)
       .map((scene, i) => {
-        const root = scene.scene.root
+        const root = scene.snapshots[scene.index].data.root
         const entity = UUIDComponent.getEntityByUUID(root)
         if (!entity || !entityExists(entity)) return []
         return [
@@ -136,6 +136,7 @@ const renderAllEntities = (filter: string, queryString: string) => {
           return [label, renderEntityComponents(eid)]
         })
         .filter((exists) => !!exists)
+        .sort(([a], [b]) => a.localeCompare(b))
     )
   }
 }

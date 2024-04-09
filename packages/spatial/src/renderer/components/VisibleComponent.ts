@@ -33,7 +33,7 @@ import { Entity } from '@etherealengine/ecs/src/Entity'
 
 export const VisibleComponent = defineComponent({
   name: 'VisibleComponent',
-  jsonID: 'EE_visible',
+  jsonID: 'visible',
   toJSON: () => true
 })
 

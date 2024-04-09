@@ -54,7 +54,7 @@ import {
 	NoColorSpace
 } from 'three';
 
-import { cleanStorageProviderURLs } from '@etherealengine/common/src/utils/parseSceneJSON'
+import createReadableTexture from '@etherealengine/spatial/src/renderer/functions/createReadableTexture'
 
 /**
  * The KHR_mesh_quantization extension allows these extra attribute component types
@@ -576,10 +576,8 @@ export class GLTFWriter {
 		if ( extensionsUsedList.length > 0 ) json.extensionsUsed = extensionsUsedList;
 		if ( extensionsRequiredList.length > 0 ) json.extensionsRequired = extensionsRequiredList;
 
-		// wipe all our storage provider URLs
-		cleanStorageProviderURLs(json)
-		
 		// Update bytelength of the single buffer.
+		
 
 		if ( options.binary === true ) {
 			const blob = new Blob( buffers, { type: 'application/octet-stream' } );

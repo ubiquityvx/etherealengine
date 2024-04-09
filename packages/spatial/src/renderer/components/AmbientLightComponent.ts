@@ -33,7 +33,7 @@ import { addObjectToGroup, removeObjectFromGroup } from './GroupComponent'
 
 export const AmbientLightComponent = defineComponent({
   name: 'AmbientLightComponent',
-  jsonID: 'EE_ambient_light',
+  jsonID: 'ambient-light',
 
   onInit: (entity) => {
     const light = new AmbientLight()
@@ -63,10 +63,9 @@ export const AmbientLightComponent = defineComponent({
     const entity = useEntityContext()
     const light = useComponent(entity, AmbientLightComponent)
     useEffect(() => {
-      const lightObj = light.light.value
-      addObjectToGroup(entity, lightObj)
+      addObjectToGroup(entity, light.light.value)
       return () => {
-        removeObjectFromGroup(entity, lightObj)
+        removeObjectFromGroup(entity, light.light.value)
       }
     }, [])
 

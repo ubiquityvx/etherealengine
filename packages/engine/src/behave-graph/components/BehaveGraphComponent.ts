@@ -27,10 +27,13 @@ import matches, { Validator } from 'ts-matches'
 
 import { GraphJSON } from '@behave-graph/core'
 
-import { cleanStorageProviderURLs, parseStorageProviderURLs } from '@etherealengine/common/src/utils/parseSceneJSON'
 import { defineComponent, useComponent } from '@etherealengine/ecs/src/ComponentFunctions'
 import { useEntityContext } from '@etherealengine/ecs/src/EntityFunctions'
 import { getMutableState, useHookstate } from '@etherealengine/hyperflux'
+import {
+  cleanStorageProviderURLs,
+  parseStorageProviderURLs
+} from '@etherealengine/spatial/src/common/functions/parseSceneJSON'
 import { useEffect } from 'react'
 import { useGraphRunner } from '../functions/useGraphRunner'
 import DefaultGraph from '../graph/default-graph.json'
@@ -41,8 +44,8 @@ export enum BehaveGraphDomain {
 }
 
 export const BehaveGraphComponent = defineComponent({
-  name: 'BehaveGraphComponent',
-  jsonID: 'EE_visual_script',
+  name: 'EE_behaveGraph',
+  jsonID: 'BehaveGraph',
 
   onInit: (entity) => {
     const domain = BehaveGraphDomain.ECS

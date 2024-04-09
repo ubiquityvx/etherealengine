@@ -28,7 +28,6 @@ import i18n from 'i18next'
 import config from '@etherealengine/common/src/config'
 import { getMutableState } from '@etherealengine/hyperflux'
 
-import { uploadAssetPath } from '@etherealengine/common/src/schema.type.module'
 import { AuthState } from '../user/services/AuthService'
 import { RethrownError } from './errors'
 
@@ -36,7 +35,7 @@ export type CancelableUploadPromiseReturnType<T = any> = { cancel: () => void; p
 export type CancelableUploadPromiseArrayReturnType<T = any> = { cancel: () => void; promises: Array<Promise<T | T[]>> }
 
 export const uploadToFeathersService = (
-  service = uploadAssetPath,
+  service = 'upload-asset',
   files: Array<File>,
   params: any = {},
   onUploadProgress?: (progress: number) => any
@@ -71,12 +70,7 @@ export const uploadToFeathersService = (
           } else {
             if (aborted) return
             console.error('Oh no! There has been an error with the request!', request, e)
-            if (status === 403) {
-              const errorResponse = JSON.parse(request.responseText)
-              reject(new Error(errorResponse.message))
-            } else {
-              reject()
-            }
+            reject()
           }
         }
       })

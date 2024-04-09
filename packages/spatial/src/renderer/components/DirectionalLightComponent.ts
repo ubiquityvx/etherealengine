@@ -28,7 +28,7 @@ import { BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, LineBa
 
 import { getMutableState, none, useHookstate } from '@etherealengine/hyperflux'
 
-import { defineComponent, hasComponent, setComponent, useComponent } from '@etherealengine/ecs/src/ComponentFunctions'
+import { defineComponent, setComponent, useComponent } from '@etherealengine/ecs/src/ComponentFunctions'
 import { Entity } from '@etherealengine/ecs/src/Entity'
 import { createEntity, removeEntity, useEntityContext } from '@etherealengine/ecs/src/EntityFunctions'
 import { EntityTreeComponent } from '@etherealengine/spatial/src/transform/components/EntityTree'
@@ -105,7 +105,7 @@ type DirectionalLightHelper = {
 
 export const DirectionalLightComponent = defineComponent({
   name: 'DirectionalLightComponent',
-  jsonID: 'EE_directional_light',
+  jsonID: 'directional-light',
 
   onInit: (entity) => {
     const light = new DirectionalLight()
@@ -251,7 +251,6 @@ export const DirectionalLightComponent = defineComponent({
         lightPlane.material.dispose()
         targetLine.geometry.dispose()
         targetLine.material.dispose()
-        if (!hasComponent(entity, DirectionalLightComponent)) return
         directionalLightComponent.helper.set(none)
       }
     }, [debugEnabled])

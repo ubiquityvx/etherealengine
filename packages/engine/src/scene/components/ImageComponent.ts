@@ -56,7 +56,7 @@ import { ImageAlphaMode, ImageAlphaModeType, ImageProjection, ImageProjectionTyp
 import { addError, clearErrors } from '../functions/ErrorFunctions'
 import { SceneState } from '../Scene'
 import { SceneAssetPendingTagComponent } from './SceneAssetPendingTagComponent'
-import { SceneComponent } from './SceneComponent'
+import { SceneObjectComponent } from './SceneObjectComponent'
 
 export const PLANE_GEO = new PlaneGeometry(1, 1, 1, 1)
 export const SPHERE_GEO = new SphereGeometry(1, 64, 32)
@@ -74,7 +74,7 @@ export type ImageResource = {
 
 export const ImageComponent = defineComponent({
   name: 'EE_image',
-  jsonID: 'EE_image',
+  jsonID: 'image',
 
   onInit: (entity) => {
     return {
@@ -113,7 +113,7 @@ export const ImageComponent = defineComponent({
     /**
      * Add SceneAssetPendingTagComponent to tell scene loading system we should wait for this asset to load
      */
-    if (!getState(SceneState).sceneLoaded && hasComponent(entity, SceneComponent))
+    if (!getState(SceneState).sceneLoaded && hasComponent(entity, SceneObjectComponent))
       SceneAssetPendingTagComponent.addResource(entity, ImageComponent.jsonID)
   },
 

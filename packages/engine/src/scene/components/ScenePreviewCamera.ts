@@ -23,19 +23,13 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import { useLayoutEffect } from 'react'
+import { useEffect } from 'react'
 import { CameraHelper, PerspectiveCamera } from 'three'
 
 import { getMutableState, none, useHookstate } from '@etherealengine/hyperflux'
 
 import { useExecute } from '@etherealengine/ecs'
-import {
-  defineComponent,
-  getComponent,
-  hasComponent,
-  setComponent,
-  useComponent
-} from '@etherealengine/ecs/src/ComponentFunctions'
+import { defineComponent, getComponent, setComponent, useComponent } from '@etherealengine/ecs/src/ComponentFunctions'
 import { Engine } from '@etherealengine/ecs/src/Engine'
 import { Entity } from '@etherealengine/ecs/src/Entity'
 import { createEntity, removeEntity, useEntityContext } from '@etherealengine/ecs/src/EntityFunctions'
@@ -51,7 +45,7 @@ import { TransformDirtyCleanupSystem } from '@etherealengine/spatial/src/transfo
 
 export const ScenePreviewCameraComponent = defineComponent({
   name: 'EE_scenePreviewCamera',
-  jsonID: 'EE_scene_preview_camera',
+  jsonID: 'scene-preview-camera',
 
   onInit: (entity) => {
     const camera = new PerspectiveCamera(80, 16 / 9, 0.2, 8000)
@@ -73,7 +67,7 @@ export const ScenePreviewCameraComponent = defineComponent({
     const previewCameraTransform = useComponent(entity, TransformComponent)
     const engineCameraTransform = useComponent(Engine.instance.cameraEntity, TransformComponent)
 
-    useLayoutEffect(() => {
+    useEffect(() => {
       const transform = getComponent(entity, TransformComponent)
       const cameraTransform = getComponent(Engine.instance.cameraEntity, TransformComponent)
       cameraTransform.position.copy(transform.position)
@@ -94,12 +88,12 @@ export const ScenePreviewCameraComponent = defineComponent({
       { before: TransformDirtyCleanupSystem }
     )
 
-    useLayoutEffect(() => {
+    useEffect(() => {
       engineCameraTransform.position.value.copy(previewCameraTransform.position.value)
       engineCameraTransform.rotation.value.copy(previewCameraTransform.rotation.value)
     }, [previewCameraTransform])
 
-    useLayoutEffect(() => {
+    useEffect(() => {
       if (!debugEnabled.value) return
 
       const helper = new CameraHelper(previewCamera.camera.value)
@@ -114,7 +108,6 @@ export const ScenePreviewCameraComponent = defineComponent({
 
       return () => {
         removeEntity(helperEntity)
-        if (!hasComponent(entity, ScenePreviewCameraComponent)) return
         previewCamera.helperEntity.set(none)
       }
     }, [debugEnabled])

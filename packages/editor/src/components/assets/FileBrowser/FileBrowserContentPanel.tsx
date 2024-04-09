@@ -27,6 +27,7 @@ import { Downgraded } from '@hookstate/core'
 import React, { useEffect, useRef } from 'react'
 import { useDrop } from 'react-dnd'
 import { useTranslation } from 'react-i18next'
+import { saveAs } from 'save-as'
 
 import ConfirmDialog from '@etherealengine/client-core/src/common/components/ConfirmDialog'
 import LoadingView from '@etherealengine/client-core/src/common/components/LoadingView'
@@ -67,11 +68,12 @@ import InputSlider from '@etherealengine/client-core/src/common/components/Input
 import { archiverPath, fileBrowserUploadPath, staticResourcePath } from '@etherealengine/common/src/schema.type.module'
 import { CommonKnownContentTypes } from '@etherealengine/common/src/utils/CommonKnownContentTypes'
 import { AssetLoader } from '@etherealengine/engine/src/assets/classes/AssetLoader'
+import { SceneState } from '@etherealengine/engine/src/scene/Scene'
 import { useFind } from '@etherealengine/spatial/src/common/functions/FeathersHooks'
 import Checkbox from '@etherealengine/ui/src/primitives/mui/Checkbox'
 import FormControlLabel from '@etherealengine/ui/src/primitives/mui/FormControlLabel'
 import { SupportedFileTypes } from '../../../constants/AssetTypes'
-import { downloadBlobAsZip, inputFileWithAddToScene } from '../../../functions/assetFunctions'
+import { inputFileWithAddToScene } from '../../../functions/assetFunctions'
 import { bytesToSize, unique } from '../../../functions/utils'
 import StringInput from '../../inputs/StringInput'
 import { ToolButton } from '../../toolbar/ToolButton'
@@ -174,6 +176,8 @@ const FileBrowserContentPanel: React.FC<FileBrowserContentPanelProps> = (props) 
   const openConfirm = useHookstate(false)
   const contentToDeletePath = useHookstate('')
 
+  const activeScene = useHookstate(getMutableState(SceneState).activeScene)
+
   const filesViewMode = useHookstate(getMutableState(FilesViewModeState).viewMode)
   const viewModeSettingsAnchorPosition = useHookstate({ left: 0, top: 0 })
 
@@ -204,7 +208,7 @@ const FileBrowserContentPanel: React.FC<FileBrowserContentPanelProps> = (props) 
 
   useEffect(() => {
     refreshDirectory()
-  }, [selectedDirectory])
+  }, [selectedDirectory, activeScene])
 
   const refreshDirectory = async () => {
     await FileBrowserService.fetchFiles(selectedDirectory.value, page)
@@ -257,16 +261,12 @@ const FileBrowserContentPanel: React.FC<FileBrowserContentPanelProps> = (props) 
             // file is directory
             await FileBrowserService.addNewFolder(`${path}${file.name}`)
           } else {
-            try {
-              const name = processFileName(file.name)
-              await uploadToFeathersService(fileBrowserUploadPath, [file], {
-                fileName: name,
-                path,
-                contentType: file.type
-              }).promise
-            } catch (err) {
-              NotificationService.dispatchNotify(err.message, { variant: 'error' })
-            }
+            const name = processFileName(file.name)
+            await uploadToFeathersService(fileBrowserUploadPath, [file], {
+              fileName: name,
+              path,
+              contentType: file.type
+            }).promise
           }
         })
       )
@@ -346,7 +346,7 @@ const FileBrowserContentPanel: React.FC<FileBrowserContentPanelProps> = (props) 
       fileName = selectedDirectory.value.split('/').at(-1) as string
     }
 
-    downloadBlobAsZip(blob, fileName)
+    saveAs(blob, fileName + '.zip')
   }
 
   const BreadcrumbItems = () => {
@@ -367,7 +367,9 @@ const FileBrowserContentPanel: React.FC<FileBrowserContentPanelProps> = (props) 
 
     const nestedIndex = breadcrumbDirectoryFiles.indexOf(nestingDirectory.value)
 
-    breadcrumbDirectoryFiles = breadcrumbDirectoryFiles.filter((_, idx) => idx >= nestedIndex)
+    breadcrumbDirectoryFiles = breadcrumbDirectoryFiles.filter((file, idx) => {
+      return idx >= nestedIndex
+    })
 
     return (
       <Breadcrumbs
@@ -630,12 +632,8 @@ const FileBrowserContentPanel: React.FC<FileBrowserContentPanelProps> = (props) 
         {showUploadAndDownloadButtons && (
           <ToolButton
             tooltip={t('editor:layout.filebrowser.uploadAsset')}
-            onClick={async () => {
-              await inputFileWithAddToScene({ directoryPath: selectedDirectory.value })
-                .then(refreshDirectory)
-                .catch((err) => {
-                  NotificationService.dispatchNotify(err.message, { variant: 'error' })
-                })
+            onClick={() => {
+              inputFileWithAddToScene({ directoryPath: selectedDirectory.value }).then(refreshDirectory)
             }}
             icon={AddIcon}
             id="uploadAsset"

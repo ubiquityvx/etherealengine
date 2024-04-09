@@ -51,7 +51,7 @@ export const inputFileWithAddToScene = async ({
   projectName?: string
   directoryPath?: string
 }): Promise<null> =>
-  new Promise((resolve, reject) => {
+  new Promise((resolve) => {
     const el = document.createElement('input')
     el.type = 'file'
     el.multiple = true
@@ -60,39 +60,33 @@ export const inputFileWithAddToScene = async ({
     el.style.display = 'none'
 
     el.onchange = async () => {
-      try {
-        let uploadedURLs: string[] = []
-        if (el.files && el.files.length > 0) {
-          const files = Array.from(el.files)
-          if (projectName) {
-            uploadedURLs = (await Promise.all(uploadProjectFiles(projectName, files, true).promises)).map(
-              (url) => url[0]
+      let uploadedURLs: string[] = []
+      if (el.files && el.files.length > 0) {
+        const files = Array.from(el.files)
+        if (projectName) {
+          uploadedURLs = (await Promise.all(uploadProjectFiles(projectName, files, true).promises)).map((url) => url[0])
+        } else if (directoryPath) {
+          uploadedURLs = await Promise.all(
+            files.map(
+              (file) =>
+                uploadToFeathersService(fileBrowserUploadPath, [file], {
+                  fileName: file.name,
+                  path: directoryPath,
+                  contentType: ''
+                }).promise
             )
-          } else if (directoryPath) {
-            uploadedURLs = await Promise.all(
-              files.map(
-                (file) =>
-                  uploadToFeathersService(fileBrowserUploadPath, [file], {
-                    fileName: file.name,
-                    path: directoryPath,
-                    contentType: ''
-                  }).promise
-              )
-            )
-          }
-
-          await Promise.all(uploadedURLs.filter((url) => /\.zip$/.test(url)).map(extractZip)).then(() =>
-            logger.info('zip files extracted')
           )
-
-          // if (projectName) {
-          //   uploadedURLs.forEach((url) => addMediaNode(url))
-          // }
-
-          resolve(null)
         }
-      } catch (err) {
-        reject(err)
+
+        await Promise.all(uploadedURLs.filter((url) => /\.zip$/.test(url)).map(extractZip)).then(() =>
+          logger.info('zip files extracted')
+        )
+
+        // if (projectName) {
+        //   uploadedURLs.forEach((url) => addMediaNode(url))
+        // }
+
+        resolve(null)
       }
     }
 
@@ -202,19 +196,4 @@ export const extractZip = async (path: string): Promise<any> => {
   } catch (err) {
     console.error('error extracting zip: ', err)
   }
-}
-
-export const downloadBlobAsZip = (blob: Blob, fileName: string) => {
-  const anchorElement = document.createElement('a')
-  anchorElement.href = URL.createObjectURL(blob)
-  anchorElement.download = fileName + '.zip'
-  document.body.appendChild(anchorElement)
-  anchorElement.dispatchEvent(
-    new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      view: window
-    })
-  )
-  document.body.removeChild(anchorElement)
 }

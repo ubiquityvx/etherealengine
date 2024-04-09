@@ -62,13 +62,13 @@ import { getRGBArray, loadCubeMapTexture } from '../constants/Util'
 import { addError, removeError } from '../functions/ErrorFunctions'
 import { EnvMapBakeComponent, applyBoxProjection } from './EnvMapBakeComponent'
 import { SceneAssetPendingTagComponent } from './SceneAssetPendingTagComponent'
-import { SceneComponent } from './SceneComponent'
+import { SceneObjectComponent } from './SceneObjectComponent'
 
 const tempColor = new Color()
 
 export const EnvmapComponent = defineComponent({
   name: 'EnvmapComponent',
-  jsonID: 'EE_envmap',
+  jsonID: 'envmap',
   onInit: (entity) => {
     return {
       type: EnvMapSourceType.None as (typeof EnvMapSourceType)[keyof typeof EnvMapSourceType],
@@ -97,7 +97,7 @@ export const EnvmapComponent = defineComponent({
     if (
       isClient &&
       !getState(SceneState).sceneLoaded &&
-      hasComponent(entity, SceneComponent) &&
+      hasComponent(entity, SceneObjectComponent) &&
       component.type.value !== EnvMapSourceType.None
     )
       SceneAssetPendingTagComponent.addResource(entity, EnvmapComponent.jsonID)

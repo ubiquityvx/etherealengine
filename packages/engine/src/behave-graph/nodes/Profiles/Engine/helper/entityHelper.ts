@@ -33,6 +33,7 @@ import {
 } from '@etherealengine/ecs/src/ComponentFunctions'
 import { Entity, UndefinedEntity } from '@etherealengine/ecs/src/Entity'
 import { createEntity } from '@etherealengine/ecs/src/EntityFunctions'
+import { SceneState } from '@etherealengine/engine/src/scene/Scene'
 import { UUIDComponent } from '@etherealengine/spatial/src/common/UUIDComponent'
 import { VisibleComponent } from '@etherealengine/spatial/src/renderer/components/VisibleComponent'
 import { EntityTreeComponent } from '@etherealengine/spatial/src/transform/components/EntityTree'
@@ -41,7 +42,7 @@ import { MathUtils } from 'three'
 
 export const addEntityToScene = (
   componentJson: Array<ComponentJsonType>,
-  parentEntity = UndefinedEntity,
+  parentEntity = SceneState.getRootEntity(),
   beforeEntity = UndefinedEntity as Entity
 ) => {
   const newEntity = createEntity()

@@ -23,7 +23,7 @@ All portions of the code written by the Ethereal Engine team are Copyright © 20
 Ethereal Engine. All Rights Reserved.
 */
 
-import { defineState, getMutableState } from '@etherealengine/hyperflux'
+import { defineState } from '@etherealengine/hyperflux'
 
 /**
  * Popover state for tailwind routes
@@ -31,18 +31,6 @@ import { defineState, getMutableState } from '@etherealengine/hyperflux'
 export const PopoverState = defineState({
   name: 'ee.client.PopoverState',
   initial: {
-    elements: [] as (JSX.Element | null)[]
-  },
-
-  /**shows a popupover. if a previous popover was already present, the `element` popover will be current showed */
-  showPopupover: (element: JSX.Element) => {
-    getMutableState(PopoverState).elements.merge([element])
-  },
-  /**close the current popover. if a previous popover was present, the previous one will be shown */
-  hidePopupover: () => {
-    getMutableState(PopoverState).elements.set((prevElements) => {
-      prevElements.pop()
-      return prevElements
-    })
+    element: null as JSX.Element | null
   }
 })

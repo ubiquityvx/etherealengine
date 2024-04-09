@@ -24,24 +24,20 @@ Ethereal Engine. All Rights Reserved.
 */
 
 import React from 'react'
-import { twMerge } from 'tailwind-merge'
 
 export const Radio = ({
   name,
   value,
   onChange,
-  selected,
-  className
+  selected
 }: {
   name: string
   value: string | number
   onChange: React.ChangeEventHandler<HTMLInputElement>
   selected: boolean
-  className?: string
 }) => {
-  const twClassname = twMerge('flex items-center', className)
   return (
-    <div className={twClassname}>
+    <div className="flex items-center">
       <input
         type="radio"
         checked={selected}
@@ -61,17 +57,14 @@ export const Radio = ({
 const Radios = ({
   currentValue,
   options,
-  onChange,
-  className
+  onChange
 }: {
   currentValue: any
   options: { name: string; value: any }[]
   onChange: (value: any) => void
-  className?: string
-  horizantal?: boolean
 }) => {
   return (
-    <div className={twMerge('grid gap-6', className)}>
+    <div className="grid gap-6">
       {options.map(({ name, value }) => (
         <Radio
           key={name}

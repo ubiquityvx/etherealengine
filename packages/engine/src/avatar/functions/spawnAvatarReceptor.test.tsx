@@ -27,14 +27,13 @@ import assert from 'assert'
 import { Quaternion, Vector3 } from 'three'
 
 import { EntityUUID } from '@etherealengine/common/src/interfaces/EntityUUID'
-import { ReactorReconciler, applyIncomingActions, dispatchAction, getMutableState } from '@etherealengine/hyperflux'
+import { applyIncomingActions, dispatchAction, getMutableState } from '@etherealengine/hyperflux'
 
 import { AvatarID, UserID } from '@etherealengine/common/src/schema.type.module'
 import { SystemDefinitions } from '@etherealengine/ecs'
 import { hasComponent } from '@etherealengine/ecs/src/ComponentFunctions'
 import { Engine, destroyEngine } from '@etherealengine/ecs/src/Engine'
 import { NameComponent } from '@etherealengine/spatial/src/common/NameComponent'
-import { EventDispatcher } from '@etherealengine/spatial/src/common/classes/EventDispatcher'
 import { createEngine } from '@etherealengine/spatial/src/initializeEngine'
 import { NetworkState } from '@etherealengine/spatial/src/networking/NetworkState'
 import { NetworkWorldUserStateSystem } from '@etherealengine/spatial/src/networking/NetworkUserState'
@@ -43,13 +42,14 @@ import { NetworkPeerFunctions } from '@etherealengine/spatial/src/networking/fun
 import { Physics } from '@etherealengine/spatial/src/physics/classes/Physics'
 import {
   RigidBodyComponent,
-  RigidBodyKinematicTagComponent
+  RigidBodyKinematicPositionBasedTagComponent
 } from '@etherealengine/spatial/src/physics/components/RigidBodyComponent'
 import { PhysicsState } from '@etherealengine/spatial/src/physics/state/PhysicsState'
 import { TransformComponent } from '@etherealengine/spatial/src/transform/components/TransformComponent'
 import { createMockNetwork } from '@etherealengine/spatial/tests/util/createMockNetwork'
-import { act, render } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import React from 'react'
+import { act } from 'react-dom/test-utils'
 import { loadEmptyScene } from '../../../tests/util/loadEmptyScene'
 import { AvatarAnimationComponent } from '../components/AvatarAnimationComponent'
 import { AvatarComponent } from '../components/AvatarComponent'
@@ -66,20 +66,6 @@ describe('spawnAvatarReceptor', () => {
     Engine.instance.userID = 'user' as UserID
     loadEmptyScene()
     createMockNetwork()
-
-    const eventDispatcher = new EventDispatcher()
-    ;(Engine.instance.api as any) = {
-      service: () => {
-        return {
-          on: (serviceName, cb) => {
-            eventDispatcher.addEventListener(serviceName, cb)
-          },
-          off: (serviceName, cb) => {
-            eventDispatcher.removeEventListener(serviceName, cb)
-          }
-        }
-      }
-    }
   })
 
   afterEach(() => {
@@ -107,8 +93,9 @@ describe('spawnAvatarReceptor', () => {
       })
     )
 
-    ReactorReconciler.flushSync(() => applyIncomingActions())
-    ReactorReconciler.flushSync(() => spawnAvatarReceptor(Engine.instance.userID as string as EntityUUID))
+    applyIncomingActions()
+
+    spawnAvatarReceptor(Engine.instance.userID as string as EntityUUID)
 
     const entity = AvatarComponent.getUserAvatarEntity(Engine.instance.userID)
 
@@ -118,7 +105,7 @@ describe('spawnAvatarReceptor', () => {
     assert(hasComponent(entity, AvatarAnimationComponent))
     assert(hasComponent(entity, AvatarControllerComponent))
     assert(hasComponent(entity, RigidBodyComponent))
-    assert(hasComponent(entity, RigidBodyKinematicTagComponent))
+    assert(hasComponent(entity, RigidBodyKinematicPositionBasedTagComponent))
 
     unmount()
   })

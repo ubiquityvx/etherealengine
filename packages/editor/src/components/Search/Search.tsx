@@ -49,11 +49,6 @@ const Search = (props: Props) => {
       <InputBase
         className={classes.input}
         onChange={handleChange}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            event.preventDefault() // Prevent default behavior of form submission on Enter key press
-          }
-        }}
         placeholder="search..."
         endAdornment={<SearchIcon className={classes.iconButton} />}
       />

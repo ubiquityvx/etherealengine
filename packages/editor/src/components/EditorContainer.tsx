@@ -37,7 +37,6 @@ import { getMutableState, getState, useHookstate } from '@etherealengine/hyperfl
 
 import Dialog from '@mui/material/Dialog'
 
-import { NotificationService } from '@etherealengine/client-core/src/common/services/NotificationService'
 import { SceneDataType, scenePath } from '@etherealengine/common/src/schema.type.module'
 import { useQuery } from '@etherealengine/ecs/src/QueryFunctions'
 import { SceneServices, SceneState } from '@etherealengine/engine/src/scene/Scene'
@@ -201,13 +200,7 @@ const onSaveAs = async () => {
 const onImportAsset = async () => {
   const { projectName } = getState(EditorState)
 
-  if (projectName) {
-    try {
-      await inputFileWithAddToScene({ projectName })
-    } catch (err) {
-      NotificationService.dispatchNotify(err.message, { variant: 'error' })
-    }
-  }
+  if (projectName) await inputFileWithAddToScene({ projectName })
 }
 
 const onSaveScene = async () => {
@@ -355,7 +348,7 @@ const tabs = [
 const EditorContainer = () => {
   const { sceneName, projectName, sceneID } = useHookstate(getMutableState(EditorState))
   const { sceneLoaded, sceneModified } = useHookstate(getMutableState(SceneState))
-  const { scenes } = useHookstate(getMutableState(SceneState))
+  const activeScene = useHookstate(getMutableState(SceneState).activeScene)
 
   const sceneLoading = sceneID.value && !sceneLoaded.value
 
@@ -422,12 +415,11 @@ const EditorContainer = () => {
   }, [sceneID])
 
   useEffect(() => {
-    if (!sceneID.value) return
-    const scene = getState(SceneState).scenes[sceneID.value]
-    if (!scene) return
-    sceneName.set(scene.name)
-    projectName.set(scene.project)
-  }, [sceneID.value, scenes.keys])
+    if (!activeScene.value) return
+    const scene = getState(SceneState).scenes[activeScene.value]
+    sceneName.set(scene.metadata.name)
+    projectName.set(scene.metadata.project)
+  }, [activeScene])
 
   useEffect(() => {
     if (!dockPanelRef.current) return
